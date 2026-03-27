@@ -6,6 +6,8 @@ A demo environment for Splunk SEs. Runs Splunk Enterprise in Docker with Butterc
 docker compose up  →  Lab guide + Splunk Web UI + MCP server ready
 ```
 
+**Lab guide (online preview):** https://andrewkriley.github.io/splunk-lab/
+
 ---
 
 ## Prerequisites

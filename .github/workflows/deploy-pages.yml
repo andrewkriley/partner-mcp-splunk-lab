@@ -1,0 +1,37 @@
+name: Deploy lab guide to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'lab-guide/**'
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Only one Pages deployment at a time
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/configure-pages@v4
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: lab-guide/
+
+      - uses: actions/deploy-pages@v4
+        id: deploy
