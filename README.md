@@ -65,7 +65,7 @@ Three datasets are auto-indexed into the `main` index:
 
 | Sourcetype | Description |
 |---|---|
-| `access_combined` | Web storefront access logs (Apache Combined format) |
+| `buttercup_web` | Web storefront access logs (Apache Combined format) |
 | `buttercup_sales` | Vendor sales transactions — units, revenue, product |
 | `buttercup_products` | Product catalogue with prices and categories |
 
@@ -73,7 +73,7 @@ Three datasets are auto-indexed into the `main` index:
 
 ```spl
 # Traffic by HTTP status code
-index=buttercup sourcetype=access_combined | stats count by status
+index=buttercup sourcetype=buttercup_web | stats count by status
 
 # Sales revenue by vendor
 index=buttercup sourcetype=buttercup_sales | stats sum(revenue) as total_revenue by vendor | sort -total_revenue

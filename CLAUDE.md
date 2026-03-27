@@ -2,6 +2,17 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Pre-push hook
+
+A pre-push hook blocks pushes until integration tests pass. Install it once after cloning:
+
+```bash
+cp hooks/pre-push .git/hooks/pre-push
+chmod +x .git/hooks/pre-push
+```
+
+The hook starts the stack automatically if it's not running, runs `pytest tests/ -v`, then tears it down. If the stack is already up, it runs tests against it and leaves it running.
+
 ## Common commands
 
 ```bash
@@ -40,7 +51,7 @@ Two services run in Docker Compose:
 - `default/props.conf` — CSV parsing config for the two CSV sourcetypes
 - `data/` — the actual sample files (`access.log`, `vendor_sales.csv`, `products.csv`)
 
-Data lands in the `main` index under sourcetypes `access_combined`, `buttercup_sales`, and `buttercup_products`.
+Data lands in the `buttercup` index under sourcetypes `buttercup_web`, `buttercup_sales`, and `buttercup_products`.
 
 ## Environment variables
 

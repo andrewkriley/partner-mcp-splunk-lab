@@ -1,37 +1,23 @@
 name: CI
 
 on:
-  push:
-    branches:
-      - 'feat/**'
   pull_request:
     branches:
       - main
 
 jobs:
 
-  # ── Per-platform integration tests ──────────────────────────────────────────
-  # Runs on:
-  #   ubuntu-latest      — x86_64 (validates Linux + Windows users natively)
-  #   ubuntu-24.04-arm   — arm64  (validates Apple Silicon / ARM users via amd64 emulation)
+  # ── Integration tests ────────────────────────────────────────────────────────
+  # Runs on ubuntu-latest (amd64).
+  # Apple Silicon (arm64) is validated locally — QEMU emulation is not
+  # representative of Docker Desktop + Rosetta and adds flakiness.
   test:
-    name: Test (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      fail-fast: false          # let both platforms complete even if one fails
-      matrix:
-        os: [ubuntu-latest, ubuntu-24.04-arm]
+    name: Test
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      # QEMU enables amd64 emulation on the arm64 runner.
-      # Splunk only publishes linux/amd64 — this is what makes it run on ARM.
-      # Safe to run on amd64 too (no-op for native platforms).
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
 
       # Create .env from the example — default credentials are safe for CI
       - name: Create .env
@@ -41,15 +27,14 @@ jobs:
       - name: Start stack
         run: docker compose up -d --build
 
-      # Splunk takes ~60–90s on amd64; longer on arm64 via emulation.
-      # Poll every 5s up to 300s total.
+      # Splunk takes ~60–90s on first boot; allow up to 180s.
       - name: Wait for Splunk
         run: |
-          echo "Waiting for Splunk (up to 300s)..."
-          for i in $(seq 1 60); do
-            curl -sf http://localhost:8000/en-US/account/login > /dev/null && echo "Splunk ready after $((i*5))s" && break
-            echo "  waiting... ($((i*5))s)"
-            sleep 5
+          echo "Waiting for Splunk (up to 180s)..."
+          for i in $(seq 1 18); do
+            curl -sf http://localhost:8000/en-US/account/login > /dev/null && echo "Splunk ready after $((i*10))s" && break
+            echo "  waiting... ($((i*10))s)"
+            sleep 10
           done
 
       # MCP container starts after Splunk is healthy — give it a moment to bind
@@ -70,6 +55,28 @@ jobs:
       - name: Install test dependencies
         run: pip install -r requirements-test.txt
 
+      # Diagnostic: check what Splunk is monitoring and what's indexed
+      - name: Splunk index diagnostic
+        if: always()
+        run: |
+          PASS=$(grep SPLUNK_PASSWORD .env | cut -d= -f2)
+          echo "=== Monitored files ==="
+          docker exec splunk /opt/splunk/bin/splunk list monitor -auth "admin:$PASS" 2>&1 | grep -i "buttercup\|access" || echo "(none matching)"
+          echo "=== Event counts by sourcetype ==="
+          curl -sk -u "admin:$PASS" \
+            "https://localhost:8089/services/search/jobs" \
+            -d 'search=search index=* earliest=0 | stats count by index sourcetype | sort -count' \
+            -d 'output_mode=json' -d 'exec_mode=oneshot' \
+            -d 'earliest_time=0' -d 'latest_time=now' \
+          | python3 -c 'import sys,json; [print(r.get("index","?"), r.get("sourcetype","?"), r.get("count","?")) for r in json.load(sys.stdin).get("results",[])]'
+          echo "=== Splunk internal errors ==="
+          curl -sk -u "admin:$PASS" \
+            "https://localhost:8089/services/search/jobs" \
+            -d 'search=index=_internal sourcetype=splunkd log_level=ERROR buttercup | head 5 | table _raw' \
+            -d 'output_mode=json' -d 'exec_mode=oneshot' \
+            -d 'earliest_time=0' -d 'latest_time=now' \
+          | python3 -c 'import sys,json; [print(r.get("_raw","")) for r in json.load(sys.stdin).get("results",[])] or print("(none)")'
+
       - name: Run tests
         run: pytest tests/ -v
 
@@ -79,19 +86,17 @@ jobs:
         run: docker compose down -v
 
   # ── Summary gate ────────────────────────────────────────────────────────────
-  # This job is the one required by branch protection.
-  # It passes only when ALL matrix jobs pass, giving a single named check
-  # regardless of how many platforms are in the matrix.
+  # Single named check required by branch protection.
   integration-tests:
     name: Integration tests
     needs: test
     runs-on: ubuntu-latest
     if: always()
     steps:
-      - name: All platform tests passed
+      - name: Check test result
         run: |
           if [ "${{ needs.test.result }}" != "success" ]; then
-            echo "One or more platform tests failed."
+            echo "Integration tests failed."
             exit 1
           fi
-          echo "All platform tests passed."
+          echo "Integration tests passed."

@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+# Pre-push hook: runs integration tests before allowing a push.
+#
+# Install:
+#   cp hooks/pre-push .git/hooks/pre-push
+#   chmod +x .git/hooks/pre-push
+
+STACK_WAS_RUNNING=false
+
+# Check if Splunk is actually responding (more reliable than checking Docker state)
+if curl -sf http://localhost:8000/en-US/account/login > /dev/null 2>&1; then
+  STACK_WAS_RUNNING=true
+  echo "[pre-push] Stack already running — skipping start"
+else
+  echo "[pre-push] Starting Docker Compose stack..."
+  docker compose up -d --build || { echo "[pre-push] ERROR: Failed to start stack"; exit 1; }
+
+  echo "[pre-push] Waiting for Splunk (up to 120s)..."
+  READY=false
+  for i in $(seq 1 24); do
+    if curl -sf http://localhost:8000/en-US/account/login > /dev/null 2>&1; then
+      echo "[pre-push] Splunk ready after $((i*5))s"
+      READY=true
+      break
+    fi
+    echo "[pre-push]   waiting... ($((i*5))s)"
+    sleep 5
+  done
+
+  if [ "$READY" = "false" ]; then
+    echo "[pre-push] ERROR: Splunk did not become ready in 120s"
+    docker compose down -v
+    exit 1
+  fi
+
+  # Wait for HEC — initialises after the web UI
+  echo "[pre-push] Waiting for HEC (up to 60s)..."
+  for i in $(seq 1 12); do
+    if curl -sk https://localhost:8088/services/collector/health > /dev/null 2>&1; then
+      echo "[pre-push] HEC ready after $((i*5))s"
+      break
+    fi
+    echo "[pre-push]   waiting... ($((i*5))s)"
+    sleep 5
+  done
+fi
+
+echo "[pre-push] Running integration tests..."
+python3 -m pytest tests/ -v
+TEST_EXIT=$?
+
+if [ "$STACK_WAS_RUNNING" = "false" ]; then
+  echo "[pre-push] Tearing down stack..."
+  docker compose down -v
+fi
+
+if [ $TEST_EXIT -ne 0 ]; then
+  echo "[pre-push] Tests failed — push blocked."
+else
+  echo "[pre-push] Tests passed — push allowed."
+fi
+
+exit $TEST_EXIT

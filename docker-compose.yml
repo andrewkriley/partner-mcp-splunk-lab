@@ -55,7 +55,7 @@ services:
           memory: 512m
     depends_on:
       splunk:
-        condition: service_healthy                 # wait for Splunk to be ready before starting MCP
+        condition: service_started                 # don't block on health — CI wait step handles readiness
 
 volumes:
   splunk-var:    # named volume — Splunk indexes and data persist here
