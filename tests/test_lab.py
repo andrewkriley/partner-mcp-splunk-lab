@@ -17,6 +17,7 @@ import pytest
 
 from tests.conftest import (
     SPLUNK_WEB_URL,
+    SPLUNK_API_URL,
     SPLUNK_HEC_URL,
     SPLUNK_HEC_TOKEN,
     MCP_URL,
@@ -48,7 +49,7 @@ class TestSplunkHealth:
     def test_management_api_authenticated(self, splunk_session):
         """Admin credentials should authenticate against the Splunk REST API."""
         resp = splunk_session.get(
-            f"http://localhost:8089/services/server/info",
+            f"{SPLUNK_API_URL}/services/server/info",
             params={"output_mode": "json"},
             timeout=10,
         )
@@ -80,15 +81,15 @@ class TestButtercupData:
         assert count >= 5, f"Expected ≥5 buttercup_products events, got {count}"
 
     def test_vendor_sales_has_expected_fields(self, splunk_session):
-        """Sales records should contain vendor, product, units_sold, and revenue fields."""
+        """Sales records should contain 5 comma-separated CSV fields in the expected order."""
         results = run_search(
             splunk_session,
-            "search index=main sourcetype=buttercup_sales | head 1 | fields vendor, product, units_sold, revenue",
+            "search index=main sourcetype=buttercup_sales | head 1 | table _raw",
         )
         assert results, "No buttercup_sales results returned"
-        row = results[0]
-        for field in ("vendor", "product", "units_sold", "revenue"):
-            assert field in row, f"Expected field '{field}' missing from buttercup_sales"
+        raw = results[0].get("_raw", "")
+        parts = raw.split(",")
+        assert len(parts) == 5, f"Expected 5 CSV fields (date,vendor,product,units_sold,revenue), got {len(parts)}: {raw}"
 
 
 # ── HTTP Event Collector ───────────────────────────────────────────────────
@@ -101,6 +102,7 @@ class TestHEC:
             headers={"Authorization": f"Splunk {SPLUNK_HEC_TOKEN}"},
             json={"event": {"message": "lab-test", "source": "pytest"}, "sourcetype": "lab_test"},
             timeout=10,
+            verify=False,  # Splunk HEC uses a self-signed cert
         )
         assert resp.status_code == 200
         assert resp.json().get("code") == 0, f"HEC error: {resp.json()}"

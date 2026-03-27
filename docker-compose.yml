@@ -3,10 +3,12 @@ services:
   # ── Splunk Enterprise ──────────────────────────────────────────────────────
   splunk:
     image: splunk/splunk:latest
+    platform: linux/amd64       # Splunk publishes amd64 only — runs via Rosetta on Apple Silicon
     container_name: splunk
     hostname: splunk
     environment:
       SPLUNK_START_ARGS: --accept-license
+      SPLUNK_GENERAL_TERMS: --accept-sgt-current-at-splunk-com   # required by newer Splunk images
       SPLUNK_PASSWORD: ${SPLUNK_PASSWORD}          # set in .env — required
       SPLUNK_HEC_TOKEN: ${SPLUNK_HEC_TOKEN}        # pre-set HEC token for easy testing
     ports:
@@ -32,13 +34,15 @@ services:
       TRANSPORT: sse
       HOST: 0.0.0.0
       PORT: 8050
-      SPLUNK_HOST: splunk                          # Docker service name — internal network
+      SPLUNK_HOST: https://splunk                   # full URL required — internal Docker network
       SPLUNK_PORT: 8089                            # Splunk REST API port
       SPLUNK_USERNAME: admin
       SPLUNK_PASSWORD: ${SPLUNK_PASSWORD}
       VERIFY_SSL: "false"                          # self-signed cert on local Splunk instance
+      NODE_TLS_REJECT_UNAUTHORIZED: "0"            # Node.js SSL bypass for self-signed Splunk cert
     ports:
       - "127.0.0.1:8050:8050"   # MCP SSE endpoint — localhost only, no auth required
+    restart: unless-stopped                        # restart if the process exits unexpectedly
     depends_on:
       splunk:
         condition: service_healthy                 # wait for Splunk to be ready before starting MCP

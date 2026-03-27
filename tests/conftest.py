@@ -15,8 +15,8 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # ── Endpoints ──────────────────────────────────────────────────────────────
 SPLUNK_WEB_URL  = os.getenv("SPLUNK_WEB_URL",  "http://localhost:8000")
-SPLUNK_API_URL  = os.getenv("SPLUNK_API_URL",  "http://localhost:8089")
-SPLUNK_HEC_URL  = os.getenv("SPLUNK_HEC_URL",  "http://localhost:8088")
+SPLUNK_API_URL  = os.getenv("SPLUNK_API_URL",  "https://localhost:8089")  # Splunk mgmt API uses HTTPS
+SPLUNK_HEC_URL  = os.getenv("SPLUNK_HEC_URL",  "https://localhost:8088")  # HEC uses HTTPS
 MCP_URL         = os.getenv("MCP_URL",         "http://localhost:8050")
 
 # Credentials — defaults match .env.example so CI works without any override
