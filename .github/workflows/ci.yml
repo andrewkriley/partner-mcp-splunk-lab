@@ -60,15 +60,12 @@ jobs:
         if: always()
         run: |
           PASS=$(grep SPLUNK_PASSWORD .env | cut -d= -f2)
-          curl -sk -u admin:$PASS \
+          curl -sk -u "admin:$PASS" \
             "https://localhost:8089/services/search/jobs" \
-            -d "search=search index=* earliest=0 | stats count by index sourcetype | sort -count" \
-            -d "output_mode=json" -d "exec_mode=oneshot" \
-            -d "earliest_time=0" -d "latest_time=now" | python3 -c "
-import sys, json
-data = json.load(sys.stdin)
-for r in data.get('results', []):
-    print(f\"  {r.get('index','?'):20} {r.get('sourcetype','?'):30} {r.get('count','?')}\")"
+            -d 'search=search index=* earliest=0 | stats count by index sourcetype | sort -count' \
+            -d 'output_mode=json' -d 'exec_mode=oneshot' \
+            -d 'earliest_time=0' -d 'latest_time=now' \
+          | python3 -c 'import sys,json; [print(r.get("index","?"), r.get("sourcetype","?"), r.get("count","?")) for r in json.load(sys.stdin).get("results",[])]'
 
       - name: Run tests
         run: pytest tests/ -v
