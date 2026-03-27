@@ -8,6 +8,8 @@ docker compose up  →  Lab guide + Splunk Web UI + MCP server ready
 
 **Lab guide (online preview):** https://andrewkriley.github.io/splunk-lab/
 
+![Lab Guide](docs/lab-guide.png)
+
 ---
 
 ## Prerequisites
