@@ -51,7 +51,7 @@ Two services run in Docker Compose:
 - `default/props.conf` — CSV parsing config for the two CSV sourcetypes
 - `data/` — the actual sample files (`access.log`, `vendor_sales.csv`, `products.csv`)
 
-Data lands in the `buttercup` index under sourcetypes `access_combined`, `buttercup_sales`, and `buttercup_products`.
+Data lands in the `buttercup` index under sourcetypes `buttercup_web`, `buttercup_sales`, and `buttercup_products`.
 
 ## Environment variables
 

@@ -26,9 +26,9 @@ SPLUNK_HEC_TOKEN = os.getenv("SPLUNK_HEC_TOKEN", "a8b4c2d6-e0f1-4321-9876-abcdef
 
 # Buttercup sourcetypes and minimum event counts expected after full ingest
 BUTTERCUP_SOURCETYPES = {
-    "access_combined":  50,
-    "buttercup_sales":  10,
-    "buttercup_products": 5,
+    "buttercup_web":      50,
+    "buttercup_sales":    10,
+    "buttercup_products":  5,
 }
 
 

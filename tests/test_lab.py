@@ -69,9 +69,9 @@ class TestButtercupData:
 
     def test_access_logs_indexed(self, buttercup_ready):
         """Web access logs (Apache Combined) should be indexed in the buttercup index."""
-        count = buttercup_ready["access_combined"]
-        assert count >= BUTTERCUP_SOURCETYPES["access_combined"], \
-            f"Expected ≥{BUTTERCUP_SOURCETYPES['access_combined']} access_combined events, got {count}"
+        count = buttercup_ready["buttercup_web"]
+        assert count >= BUTTERCUP_SOURCETYPES["buttercup_web"], \
+            f"Expected ≥{BUTTERCUP_SOURCETYPES['buttercup_web']} buttercup_web events, got {count}"
 
     def test_vendor_sales_indexed(self, buttercup_ready):
         """Vendor sales CSV should be indexed in the buttercup index."""
