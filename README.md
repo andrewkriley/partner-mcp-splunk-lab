@@ -1,6 +1,6 @@
-# Splunk Partner Lab
+# Splunk Lab
 
-A 101 demo environment for Cisco/Splunk partner SEs. Runs Splunk Enterprise in Docker with Buttercup Games sample data pre-loaded and the Splunk MCP server ready for Claude Code or Claude Desktop.
+A demo environment for Splunk SEs. Runs Splunk Enterprise in Docker with Buttercup Games sample data pre-loaded and the Splunk MCP server ready for Claude Code or Claude Desktop.
 
 ```
 docker compose up  →  Splunk Web UI + MCP server ready
