@@ -57,6 +57,10 @@ Data lands in the `buttercup` index under sourcetypes `buttercup_web`, `buttercu
 
 All runtime config lives in `.env` (gitignored). See `.env.example` for the full reference. The only required variable is `SPLUNK_PASSWORD`. `SPLUNK_HEC_TOKEN` pre-sets the HEC token so it's known before boot.
 
+## Known gotchas
+
+- **Do not name data files with a `.log` extension.** The Splunk Docker image silently blocks all `.log` files under `/opt/splunk/etc/` from being monitored — they never appear in `splunk list monitor` and are never indexed. Use `.txt`, `.csv`, or any other extension instead.
+
 ## Security posture
 
 This lab is intentionally insecure for local demo use:

@@ -55,28 +55,6 @@ jobs:
       - name: Install test dependencies
         run: pip install -r requirements-test.txt
 
-      # Diagnostic: check what Splunk is monitoring and what's indexed
-      - name: Splunk index diagnostic
-        if: always()
-        run: |
-          PASS=$(grep SPLUNK_PASSWORD .env | cut -d= -f2)
-          echo "=== Monitored files ==="
-          docker exec splunk /opt/splunk/bin/splunk list monitor -auth "admin:$PASS" 2>&1 | grep -i "buttercup\|access" || echo "(none matching)"
-          echo "=== Event counts by sourcetype ==="
-          curl -sk -u "admin:$PASS" \
-            "https://localhost:8089/services/search/jobs" \
-            -d 'search=search index=* earliest=0 | stats count by index sourcetype | sort -count' \
-            -d 'output_mode=json' -d 'exec_mode=oneshot' \
-            -d 'earliest_time=0' -d 'latest_time=now' \
-          | python3 -c 'import sys,json; [print(r.get("index","?"), r.get("sourcetype","?"), r.get("count","?")) for r in json.load(sys.stdin).get("results",[])]'
-          echo "=== Splunk internal errors ==="
-          curl -sk -u "admin:$PASS" \
-            "https://localhost:8089/services/search/jobs" \
-            -d 'search=index=_internal sourcetype=splunkd log_level=ERROR buttercup | head 5 | table _raw' \
-            -d 'output_mode=json' -d 'exec_mode=oneshot' \
-            -d 'earliest_time=0' -d 'latest_time=now' \
-          | python3 -c 'import sys,json; [print(r.get("_raw","")) for r in json.load(sys.stdin).get("results",[])] or print("(none)")'
-
       - name: Run tests
         run: pytest tests/ -v
 

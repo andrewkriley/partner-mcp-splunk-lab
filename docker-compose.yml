@@ -2,7 +2,7 @@ services:
 
   # ── Splunk Enterprise ──────────────────────────────────────────────────────
   splunk:
-    image: splunk/splunk:latest
+    image: splunk/splunk:10.2.1
     platform: linux/amd64       # Splunk publishes amd64 only — runs via Rosetta on Apple Silicon
     container_name: splunk
     hostname: splunk
