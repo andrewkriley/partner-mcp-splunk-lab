@@ -57,5 +57,18 @@ services:
       splunk:
         condition: service_started                 # don't block on health — CI wait step handles readiness
 
+  # ── Lab Guide ──────────────────────────────────────────────────────────────
+  lab-guide:
+    image: nginx:alpine
+    container_name: lab-guide
+    ports:
+      - "127.0.0.1:3000:80"   # Lab guide — localhost only
+    volumes:
+      - ./lab-guide:/usr/share/nginx/html:ro
+    deploy:
+      resources:
+        limits:
+          memory: 64m
+
 volumes:
   splunk-var:    # named volume — Splunk indexes and data persist here

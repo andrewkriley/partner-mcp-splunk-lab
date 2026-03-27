@@ -3,7 +3,7 @@
 A demo environment for Splunk SEs. Runs Splunk Enterprise in Docker with Buttercup Games sample data pre-loaded and the Splunk MCP server ready for Claude Code or Claude Desktop.
 
 ```
-docker compose up  →  Splunk Web UI + MCP server ready
+docker compose up  →  Lab guide + Splunk Web UI + MCP server ready
 ```
 
 ---
@@ -47,9 +47,10 @@ docker compose logs -f splunk
 
 When you see `Ansible playbook complete`, Splunk is ready.
 
-**3. Open Splunk**
+**3. Open the lab**
 
-- **Web UI:** http://localhost:8000
+- **Lab Guide:** http://localhost:3000 — click-through setup and search guide
+- **Splunk Web UI:** http://localhost:8000
 - **Username:** `admin`
 - **Password:** the value you set in `.env`
 
@@ -195,6 +196,7 @@ All ports are bound to `127.0.0.1` and are only accessible from this machine.
 
 | Port | Service |
 |---|---|
+| `3000` | Lab Guide |
 | `8000` | Splunk Web UI |
 | `8088` | HTTP Event Collector (HEC) |
 | `8089` | Splunk REST API |
