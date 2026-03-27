@@ -27,12 +27,11 @@ jobs:
       - name: Start stack
         run: docker compose up -d --build
 
-      # Splunk takes ~60–90s on first boot.
-      # Poll every 10s up to 300s total.
+      # Splunk takes ~60–90s on first boot; allow up to 180s.
       - name: Wait for Splunk
         run: |
-          echo "Waiting for Splunk (up to 300s)..."
-          for i in $(seq 1 30); do
+          echo "Waiting for Splunk (up to 180s)..."
+          for i in $(seq 1 18); do
             curl -sf http://localhost:8000/en-US/account/login > /dev/null && echo "Splunk ready after $((i*10))s" && break
             echo "  waiting... ($((i*10))s)"
             sleep 10

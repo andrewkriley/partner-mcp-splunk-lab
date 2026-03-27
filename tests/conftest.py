@@ -51,7 +51,7 @@ def buttercup_ready(splunk_session):
     sequential per-sourcetype timeouts when one sourcetype (access_combined,
     which requires Apache Combined log parsing) takes longer than the others.
     """
-    deadline = time.time() + 300
+    deadline = time.time() + 600
     while time.time() < deadline:
         counts = {}
         for st in BUTTERCUP_SOURCETYPES:
@@ -83,7 +83,7 @@ def buttercup_ready(splunk_session):
         time.sleep(5)
 
     raise TimeoutError(
-        f"Buttercup data not fully indexed after 300s. Last counts: {counts}"
+        f"Buttercup data not fully indexed after 600s. Last counts: {counts}"
     )
 
 
