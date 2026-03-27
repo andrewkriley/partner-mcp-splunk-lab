@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'lab-guide/**'
+  workflow_dispatch:
 
 permissions:
   contents: read
