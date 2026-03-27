@@ -65,7 +65,20 @@ def buttercup_ready(splunk_session):
                 counts[st] = 0
 
         if all(counts.get(st, 0) >= n for st, n in BUTTERCUP_SOURCETYPES.items()):
-            return counts
+            # Counts are met — wait until raw events are also retrievable.
+            # Splunk can report counts before events are fully committed to disk.
+            for _ in range(12):
+                try:
+                    raw = run_search(
+                        splunk_session,
+                        "search index=buttercup sourcetype=buttercup_sales | head 1",
+                    )
+                    if raw:
+                        return counts
+                except Exception:
+                    pass
+                time.sleep(5)
+            return counts  # timed out waiting for raw — let tests surface the failure
 
         time.sleep(5)
 

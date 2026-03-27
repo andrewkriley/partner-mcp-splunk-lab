@@ -1,37 +1,23 @@
 name: CI
 
 on:
-  push:
-    branches:
-      - 'feat/**'
   pull_request:
     branches:
       - main
 
 jobs:
 
-  # ── Per-platform integration tests ──────────────────────────────────────────
-  # Runs on:
-  #   ubuntu-latest      — x86_64 (validates Linux + Windows users natively)
-  #   ubuntu-24.04-arm   — arm64  (validates Apple Silicon / ARM users via amd64 emulation)
+  # ── Integration tests ────────────────────────────────────────────────────────
+  # Runs on ubuntu-latest (amd64).
+  # Apple Silicon (arm64) is validated locally — QEMU emulation is not
+  # representative of Docker Desktop + Rosetta and adds flakiness.
   test:
-    name: Test (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      fail-fast: false          # let both platforms complete even if one fails
-      matrix:
-        os: [ubuntu-latest, ubuntu-24.04-arm]
+    name: Test
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      # QEMU enables amd64 emulation on the arm64 runner.
-      # Splunk only publishes linux/amd64 — this is what makes it run on ARM.
-      # Safe to run on amd64 too (no-op for native platforms).
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
 
       # Create .env from the example — default credentials are safe for CI
       - name: Create .env
@@ -41,12 +27,12 @@ jobs:
       - name: Start stack
         run: docker compose up -d --build
 
-      # Splunk takes ~60–90s on amd64; up to 10 min on arm64 via QEMU emulation.
-      # Poll every 10s up to 600s total.
+      # Splunk takes ~60–90s on first boot.
+      # Poll every 10s up to 300s total.
       - name: Wait for Splunk
         run: |
-          echo "Waiting for Splunk (up to 600s)..."
-          for i in $(seq 1 60); do
+          echo "Waiting for Splunk (up to 300s)..."
+          for i in $(seq 1 30); do
             curl -sf http://localhost:8000/en-US/account/login > /dev/null && echo "Splunk ready after $((i*10))s" && break
             echo "  waiting... ($((i*10))s)"
             sleep 10
@@ -79,19 +65,17 @@ jobs:
         run: docker compose down -v
 
   # ── Summary gate ────────────────────────────────────────────────────────────
-  # This job is the one required by branch protection.
-  # It passes only when ALL matrix jobs pass, giving a single named check
-  # regardless of how many platforms are in the matrix.
+  # Single named check required by branch protection.
   integration-tests:
     name: Integration tests
     needs: test
     runs-on: ubuntu-latest
     if: always()
     steps:
-      - name: All platform tests passed
+      - name: Check test result
         run: |
           if [ "${{ needs.test.result }}" != "success" ]; then
-            echo "One or more platform tests failed."
+            echo "Integration tests failed."
             exit 1
           fi
-          echo "All platform tests passed."
+          echo "Integration tests passed."

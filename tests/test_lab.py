@@ -89,7 +89,7 @@ class TestButtercupData:
         """Sales records should contain 5 comma-separated CSV fields in the expected order."""
         results = run_search(
             splunk_session,
-            "search index=buttercup sourcetype=buttercup_sales | head 1 | table _raw",
+            "search index=buttercup sourcetype=buttercup_sales | head 1",
         )
         assert results, "No buttercup_sales results returned"
         raw = results[0].get("_raw", "")
