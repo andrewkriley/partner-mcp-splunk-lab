@@ -16,7 +16,7 @@ The lab guide at `http://localhost:3131` is the single interface for the lab. It
 
 ### Lab Steps
 
-Step-by-step walkthrough: clone the repo, configure credentials, start the stack, and connect Claude.
+Step-by-step walkthrough: clone the repo, configure credentials, start the stack, and connect to MCP.
 
 ![Lab Guide Steps](docs/lab-guide.png)
 

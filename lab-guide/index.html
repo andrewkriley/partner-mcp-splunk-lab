@@ -204,6 +204,18 @@
         .copy-btn:hover { color: var(--accent); border-color: var(--accent); }
         .copy-btn.copied { color: var(--accent); border-color: var(--accent); }
 
+        /* ── Notice (info banner) ──────────────────────────────────────────── */
+        .notice {
+            display: flex; gap: 10px; align-items: flex-start;
+            padding: 13px 16px; border-radius: 6px; margin: 0 0 18px;
+            font-size: 13px; line-height: 1.5;
+            background: rgba(88,166,255,0.08);
+            border: 1px solid rgba(88,166,255,0.25);
+            color: var(--text-primary);
+        }
+        .notice a { color: #58a6ff; text-decoration: none; }
+        .notice a:hover { text-decoration: underline; }
+
         /* ── Alert ─────────────────────────────────────────────────────────── */
         .alert {
             display: flex; gap: 10px; align-items: flex-start;
@@ -402,7 +414,7 @@
         </div>
         <div class="step-item" data-step="2" onclick="goTo(2)">
             <div class="step-num">3</div>
-            <div class="step-label">Connect Claude</div>
+            <div class="step-label">Connect to MCP</div>
         </div>
 
         <hr class="sidebar-hr">
@@ -603,10 +615,14 @@ cd splunk-lab</code>
             </div>
         </div>
 
-        <!-- ── Step 3: Connect Claude ────────────────────────────────────── -->
+        <!-- ── Step 3: Connect to MCP ────────────────────────────────────── -->
         <div class="step-page" id="step-2">
             <div class="step-badge">Step 3</div>
-            <h1>Connect Claude</h1>
+            <h1>Connect to MCP</h1>
+            <div class="notice">
+                <span>ℹ️</span>
+                <span>MCP client support is evolving. See <a href="https://github.com/andrewkriley/splunk-lab/issues/17" target="_blank" rel="noopener">issue #17</a> for known limitations and planned client additions.</span>
+            </div>
             <p class="intro">The Splunk MCP server runs alongside Splunk and gives Claude direct access to search, dashboards, and alerts via the Model Context Protocol. Choose your client below.</p>
 
             <div class="tabs">
