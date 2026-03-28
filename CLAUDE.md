@@ -46,7 +46,7 @@ Four services run in Docker Compose:
 
 - **splunk-mcp** (built from `mcp/Dockerfile`) — Official Splunk MCP server (`splunk-mcp-server` npm package). Runs in SSE mode on `127.0.0.1:8050`. Connects to Splunk via internal Docker networking on `splunk:8089`. No MCP endpoint auth — localhost-only by design.
 
-- **lab-guide** (`nginx:alpine`) — Static lab guide served at `127.0.0.1:3000`. Mounts `lab-guide/` as the web root and `lab-guide/nginx.conf` as the nginx config. Proxies `/api/status` to `status-api:8081` so the status dashboard can poll from the browser without a separate port.
+- **lab-guide** (`nginx:alpine`) — Static lab guide served at `127.0.0.1:3131`. Mounts `lab-guide/` as the web root and `lab-guide/nginx.conf` as the nginx config. Proxies `/api/status` to `status-api:8081` so the status dashboard can poll from the browser without a separate port.
 
 - **status-api** (built from `status-api/Dockerfile`) — Python sidecar that exposes `GET /api/status` on port 8081 (internal only). Uses the Docker SDK via a read-only `docker.sock` mount to check container states and probes Splunk Web and MCP HTTP endpoints for service health.
 

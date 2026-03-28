@@ -12,7 +12,7 @@ docker compose up  →  Lab guide + Splunk Web UI + MCP server ready
 
 ## Lab Guide
 
-The lab guide at `http://localhost:3000` is the single interface for the lab. It includes guided setup steps, SPL exercises, a live status dashboard, and documentation — all in one place.
+The lab guide at `http://localhost:3131` is the single interface for the lab. It includes guided setup steps, SPL exercises, a live status dashboard, and documentation — all in one place.
 
 ### Lab Steps
 
@@ -70,7 +70,7 @@ When you see `Ansible playbook complete`, Splunk is ready.
 
 **3. Open the lab**
 
-- **Lab Guide:** http://localhost:3000 — click-through setup and search guide
+- **Lab Guide:** http://localhost:3131 — click-through setup and search guide
 - **Splunk Web UI:** http://localhost:8000
 - **Username:** `admin`
 - **Password:** the value you set in `.env`
@@ -109,7 +109,7 @@ index=buttercup sourcetype=buttercup_sales | timechart span=1d sum(revenue) by v
 
 ### Lab Guide and Status Dashboard
 
-The lab guide runs at `http://localhost:3000` and serves as the single interface for the lab:
+The lab guide runs at `http://localhost:3131` and serves as the single interface for the lab:
 
 - **Steps 1–3** — click-through setup and guided SPL exercises
 - **Status** — live dashboard showing container health, Splunk Web and MCP service reachability, and OpenTelemetry stack placeholders (auto-refreshes every 10s)
@@ -230,7 +230,7 @@ All ports are bound to `127.0.0.1` and are only accessible from this machine.
 
 | Port | Service |
 |---|---|
-| `3000` | Lab Guide |
+| `3131` | Lab Guide |
 | `8000` | Splunk Web UI |
 | `8088` | HTTP Event Collector (HEC) |
 | `8089` | Splunk REST API |
