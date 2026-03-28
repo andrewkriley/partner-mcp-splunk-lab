@@ -8,7 +8,23 @@ docker compose up  →  Lab guide + Splunk Web UI + MCP server ready
 
 **Lab guide (online preview):** https://andrewkriley.github.io/splunk-lab/
 
-![Lab Guide](docs/lab-guide.png)
+---
+
+## Lab Guide
+
+The lab guide at `http://localhost:3000` is the single interface for the lab. It includes guided setup steps, SPL exercises, a live status dashboard, and documentation — all in one place.
+
+### Lab Steps
+
+Step-by-step walkthrough: clone the repo, configure credentials, start the stack, and connect Claude.
+
+![Lab Guide Steps](docs/lab-guide.png)
+
+### Status Dashboard
+
+Live health of all lab services — container states, Splunk Web and MCP reachability, and OpenTelemetry stack placeholders. Auto-refreshes every 10 seconds.
+
+![Lab Status Dashboard](docs/status.png)
 
 ---
 
