@@ -21,6 +21,7 @@ from tests.conftest import (
     SPLUNK_HEC_URL,
     SPLUNK_HEC_TOKEN,
     MCP_URL,
+    LAB_GUIDE_URL,
     BUTTERCUP_SOURCETYPES,
     run_search,
 )
@@ -152,6 +153,24 @@ class TestHEC:
         )
         assert resp.status_code == 200
         assert resp.json().get("code") == 0, f"HEC error: {resp.json()}"
+
+
+# ── Lab Guide ──────────────────────────────────────────────────────────────
+
+class TestLabGuide:
+    def test_lab_guide_port_is_open(self):
+        """Lab guide nginx should be listening on port 3131."""
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(5)
+        result = sock.connect_ex(("localhost", 3131))
+        sock.close()
+        assert result == 0, "Could not connect to lab guide on port 3131"
+
+    def test_lab_guide_returns_html(self):
+        """Lab guide should return HTTP 200 with HTML content."""
+        resp = requests.get(LAB_GUIDE_URL, timeout=10)
+        assert resp.status_code == 200
+        assert "text/html" in resp.headers.get("Content-Type", "")
 
 
 # ── MCP server ─────────────────────────────────────────────────────────────
