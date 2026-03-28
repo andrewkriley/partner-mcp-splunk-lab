@@ -44,7 +44,7 @@ for i in $(seq 1 12); do
 done
 
 echo "[pre-push] Running integration tests..."
-python3 -m pytest tests/ -v
+.venv/bin/python3 -m pytest tests/ -v
 TEST_EXIT=$?
 
 echo "[pre-push] Tearing down stack..."
