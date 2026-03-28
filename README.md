@@ -1,6 +1,6 @@
 # Splunk Lab
 
-A demo environment for anyone looking to get a kick start with their Splunk learning journey in a self-hosted environment. Runs Splunk Enterprise in Docker with Buttercup Games sample data pre-loaded and the Splunk MCP server ready for Claude Code or Claude Desktop.
+A demo environment for anyone looking to get a kick start with their Splunk learning journey in a self-hosted environment. Runs Splunk Enterprise in Docker with Buttercup Games sample data pre-loaded and the Splunk MCP server ready for Claude Code or Claude Desktop. Prefer a hosted option? Try the [Splunk Cloud 14-day free trial](https://www.splunk.com/en_us/download/splunk-cloud.html).
 
 ```
 docker compose up  →  Lab guide + Splunk Web UI + MCP server ready
