@@ -768,6 +768,13 @@ cd splunk-lab</code>
     let statusInterval = null;
     let statusCountdown = 10;
 
+    // Hide the Status tab when running outside the local Docker stack
+    // (e.g. GitHub Pages) — the API backend is not available there.
+    const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+    if (!isLocal) {
+        document.querySelector('.step-item[data-step="3"]')?.remove();
+    }
+
     function goTo(n) {
         document.querySelectorAll('.step-page').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.step-item[data-step]').forEach(i => i.classList.remove('active'));
@@ -787,8 +794,8 @@ cd splunk-lab</code>
         }
 
         document.querySelector('.content').scrollTop = 0;
-        if (n === 3) startStatusPolling();
-        else         stopStatusPolling();
+        if (n === 3 && isLocal) startStatusPolling();
+        else                    stopStatusPolling();
     }
 
     function navigate(d) {
