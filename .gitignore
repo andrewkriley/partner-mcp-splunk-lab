@@ -16,3 +16,8 @@
 
 # Logs
 *.log
+
+# Python
+.venv/
+__pycache__/
+*.pyc
