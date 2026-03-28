@@ -61,6 +61,24 @@ All runtime config lives in `.env` (gitignored). See `.env.example` for the full
 
 - **Do not name data files with a `.log` extension.** The Splunk Docker image silently blocks all `.log` files under `/opt/splunk/etc/` from being monitored — they never appear in `splunk list monitor` and are never indexed. Use `.txt`, `.csv`, or any other extension instead.
 
+## GitHub token scopes
+
+The `gh` CLI is used throughout this repo for PRs, branch protection, CI checks, and triggering workflows. The personal access token needs these scopes:
+
+| Scope | Required for |
+|---|---|
+| `repo` | Push/pull, branch protection rules, PRs, issues |
+| `workflow` | Triggering `workflow_dispatch` (e.g. manual GitHub Pages deploy) |
+| `read:org` | `gh pr` and `gh run` commands |
+
+To update scopes: **GitHub → Settings → Developer settings → Personal access tokens**.
+
+To manually trigger a Pages redeploy (e.g. after workflow changes that didn't touch `lab-guide/`):
+
+```bash
+gh workflow run deploy-pages.yml --ref main
+```
+
 ## Security posture
 
 This lab is intentionally insecure for local demo use:
