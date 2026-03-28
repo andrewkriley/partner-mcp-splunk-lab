@@ -164,6 +164,8 @@ index=main sourcetype=my_sourcetype
 
 The Splunk MCP server runs as a container alongside Splunk and exposes an SSE endpoint at `http://localhost:8050/sse`. It gives Claude direct access to Splunk search, dashboards, and alerts.
 
+> **Known issue:** MCP client support is evolving. See [issue #17](https://github.com/andrewkriley/splunk-lab/issues/17) for known limitations and planned client additions.
+
 > **Security note:** The MCP endpoint requires no authentication and is bound to `127.0.0.1` only — it is not accessible from other machines on the network. This configuration is intentional for local demo use. Do not expose port `8050` to external networks.
 
 > **Why mcp-remote?** Claude Code and Claude Desktop require HTTPS for direct SSE connections. Since the lab MCP server uses plain HTTP on localhost, [`mcp-remote`](https://www.npmjs.com/package/mcp-remote) is used as a local stdio proxy — Claude talks to it over stdio, and it forwards requests to `localhost:8050` over HTTP. No SSL involved. Node.js must be installed on the host for `npx` to work.
