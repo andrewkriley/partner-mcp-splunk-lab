@@ -86,16 +86,45 @@ class TestButtercupData:
             f"Expected ≥{BUTTERCUP_SOURCETYPES['buttercup_products']} buttercup_products events, got {count}"
 
     def test_vendor_sales_has_expected_fields(self, buttercup_ready, splunk_session):
-        """Sales records should contain 5 comma-separated CSV fields in the expected order."""
+        """Sales CSV fields (vendor, product, units_sold, revenue) must be extracted with correct names."""
         results = run_search(
             splunk_session,
-            "search index=buttercup sourcetype=buttercup_sales | head 1",
+            "search index=buttercup sourcetype=buttercup_sales | head 1 | fields vendor, product, units_sold, revenue",
         )
         assert results, "No buttercup_sales results returned"
-        raw = results[0].get("_raw", "")
-        parts = raw.split(",")
-        assert len(parts) == 5, \
-            f"Expected 5 CSV fields (date,vendor,product,units_sold,revenue), got {len(parts)}: {raw}"
+        row = results[0]
+        for field in ("vendor", "product", "units_sold", "revenue"):
+            assert field in row and row[field], \
+                f"Expected field '{field}' missing or empty — check INDEXED_EXTRACTIONS in props.conf"
+
+    def test_vendor_sales_revenue_query(self, buttercup_ready, splunk_session):
+        """Lab-guide SPL: stats sum(revenue) by vendor should return results."""
+        results = run_search(
+            splunk_session,
+            "search index=buttercup sourcetype=buttercup_sales | stats sum(revenue) as total_revenue by vendor | sort -total_revenue",
+        )
+        assert results, "Revenue by vendor query returned no results"
+        assert all("vendor" in r and "total_revenue" in r for r in results)
+
+    def test_vendor_sales_timechart_query(self, buttercup_ready, splunk_session):
+        """Lab-guide SPL: timechart span=1d sum(revenue) by vendor should span multiple days."""
+        results = run_search(
+            splunk_session,
+            "search index=buttercup sourcetype=buttercup_sales | timechart span=1d sum(revenue) by vendor",
+        )
+        assert len(results) > 1, \
+            f"Expected multiple daily buckets, got {len(results)} — check TIME_FORMAT in props.conf"
+
+    def test_web_status_field_extracted(self, buttercup_ready, splunk_session):
+        """Apache Combined log field extraction should populate the status field."""
+        results = run_search(
+            splunk_session,
+            "search index=buttercup sourcetype=buttercup_web | stats count by status | where status!=\"\"",
+        )
+        assert results, \
+            "No status values extracted from buttercup_web — check EXTRACT-apache in props.conf"
+        statuses = {r["status"] for r in results}
+        assert statuses, "status field is empty on all buttercup_web events"
 
     def test_web_status_field_extracted(self, buttercup_ready, splunk_session):
         """Apache Combined log field extraction should populate the status field."""
