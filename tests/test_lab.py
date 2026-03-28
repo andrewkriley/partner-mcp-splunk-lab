@@ -97,6 +97,17 @@ class TestButtercupData:
         assert len(parts) == 5, \
             f"Expected 5 CSV fields (date,vendor,product,units_sold,revenue), got {len(parts)}: {raw}"
 
+    def test_web_status_field_extracted(self, buttercup_ready, splunk_session):
+        """Apache Combined log field extraction should populate the status field."""
+        results = run_search(
+            splunk_session,
+            "search index=buttercup sourcetype=buttercup_web | stats count by status | where status!=\"\"",
+        )
+        assert results, \
+            "No status values extracted from buttercup_web — check EXTRACT-apache in props.conf"
+        statuses = {r["status"] for r in results}
+        assert statuses, "status field is empty on all buttercup_web events"
+
 
 # ── HTTP Event Collector ───────────────────────────────────────────────────
 
