@@ -16,7 +16,7 @@ import urllib3
 urllib3.disable_warnings()
 
 # Import version from parent directory
-sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).parent))
 try:
     from version import __version__
 except ImportError:
