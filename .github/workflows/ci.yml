@@ -63,11 +63,34 @@ jobs:
         if: always()
         run: docker compose down -v
 
+  # ── Version bump check ──────────────────────────────────────────────────────
+  # Ensures VERSION is bumped on every PR so releases stay in sync.
+  version-bump:
+    name: Version bump
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Check VERSION was bumped
+        run: |
+          BASE=$(git show origin/${{ github.base_ref }}:VERSION)
+          HEAD=$(cat VERSION)
+          echo "Base VERSION: $BASE"
+          echo "PR VERSION:   $HEAD"
+          if [ "$BASE" = "$HEAD" ]; then
+            echo "ERROR: VERSION file was not updated. Bump it before merging."
+            exit 1
+          fi
+          echo "✓ VERSION bumped: $BASE → $HEAD"
+
   # ── Summary gate ────────────────────────────────────────────────────────────
   # Single named check required by branch protection.
   integration-tests:
     name: Integration tests
-    needs: test
+    needs: [test, version-bump]
     runs-on: ubuntu-latest
     if: always()
     steps:
@@ -77,4 +100,8 @@ jobs:
             echo "Integration tests failed."
             exit 1
           fi
-          echo "Integration tests passed."
+          if [ "${{ needs.version-bump.result }}" != "success" ]; then
+            echo "Version bump check failed."
+            exit 1
+          fi
+          echo "All checks passed."
