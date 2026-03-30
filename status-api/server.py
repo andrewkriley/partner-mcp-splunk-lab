@@ -3,15 +3,24 @@
 
 import json
 import re
+import sys
 import time
 from datetime import datetime, timezone
 from http.server import HTTPServer, BaseHTTPRequestHandler
+from pathlib import Path
 
 import docker
 import requests
 import urllib3
 
 urllib3.disable_warnings()
+
+# Import version from parent directory
+sys.path.insert(0, str(Path(__file__).parent))
+try:
+    from version import __version__
+except ImportError:
+    __version__ = "unknown"
 
 CORE_CONTAINERS = ["splunk", "splunk-mcp", "lab-guide", "status-api"]
 
@@ -131,6 +140,7 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == "/api/status":
             data = {
+                "version":    __version__,
                 "timestamp":  datetime.now(timezone.utc).isoformat(),
                 "containers": check_containers(),
                 "services":   check_services(),

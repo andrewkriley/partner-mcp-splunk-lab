@@ -1,5 +1,7 @@
 # Splunk Lab
 
+[![Version](https://img.shields.io/github/v/release/andrewkriley/splunk-lab?label=version)](https://github.com/andrewkriley/splunk-lab/releases/latest)
+
 A demo environment for anyone looking to get a kick start with their Splunk learning journey in a self-hosted environment. Runs Splunk Enterprise in Docker with Buttercup Games sample data pre-loaded and the Splunk MCP server ready for Claude Code or Claude Desktop. Prefer a hosted option? Try the [Splunk Cloud 14-day free trial](https://www.splunk.com/en_us/download/splunk-cloud.html).
 
 ```
@@ -238,3 +240,9 @@ All ports are bound to `127.0.0.1` and are only accessible from this machine.
 | `8088` | HTTP Event Collector (HEC) |
 | `8089` | Splunk REST API |
 | `8050` | Splunk MCP Server (SSE) |
+
+---
+
+## Contributing
+
+For information on versioning and releases, see [VERSIONING.md](VERSIONING.md).

@@ -81,7 +81,8 @@ services:
   # ── Status API ─────────────────────────────────────────────────────────────
   status-api:
     build:
-      context: ./status-api
+      context: .
+      dockerfile: status-api/Dockerfile
     container_name: status-api
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro   # read-only docker access for container checks

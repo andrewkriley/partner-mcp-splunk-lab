@@ -701,7 +701,7 @@ cd splunk-lab</code>
             <div class="status-page-header">
                 <div>
                     <h1>Status</h1>
-                    <p class="intro" style="margin-bottom:0">Live health of all lab services.</p>
+                    <p class="intro" style="margin-bottom:0">Live health of all lab services. <span id="lab-version" style="opacity:0.5"></span></p>
                 </div>
                 <div class="status-refresh-info" id="status-refresh-info">Loading…</div>
             </div>
@@ -858,6 +858,9 @@ cd splunk-lab</code>
         const ts = new Date(data.timestamp);
         document.getElementById('status-refresh-info').textContent =
             'Live · Updated ' + ts.toLocaleTimeString();
+        if (data.version) {
+            document.getElementById('lab-version').textContent = 'v' + data.version;
+        }
         renderGrid('status-containers', data.containers, containerCard);
         renderGrid('status-services',   data.services,   serviceCard);
         renderGrid('status-otel',       data.otel,       otelCard);
