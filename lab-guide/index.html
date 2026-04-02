@@ -419,7 +419,7 @@
 
         <hr class="sidebar-hr">
         <div class="sidebar-label">Lab Tools</div>
-        <div class="step-item" onclick="window.open('http://localhost:3132','_blank')">
+        <div class="step-item" id="ask-splunk-link" onclick="window.open('http://localhost:3132','_blank')">
             <div class="tool-icon">💬</div>
             <div class="step-label">Ask Splunk</div>
         </div>
@@ -793,6 +793,7 @@ cd splunk-lab</code>
     const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
     if (!isLocal) {
         document.querySelector('.step-item[data-step="3"]')?.remove();
+        document.getElementById('ask-splunk-link')?.remove();
     }
 
     function goTo(n) {
