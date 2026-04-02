@@ -44,7 +44,7 @@
   .tool-item.active .tool-desc { color:rgba(255,255,255,0.7); }
 
   .tool-panel { flex:1; display:flex; flex-direction:column; overflow:hidden; }
-  .tool-form { padding:20px 24px; border-bottom:1px solid var(--border); overflow-y:auto; max-height:50%; }
+  .tool-form { padding:20px 24px; overflow-y:auto; flex:1; }
   .tool-form h2 { font-size:16px; margin-bottom:4px; }
   .tool-form .desc { font-size:13px; color:var(--text-dim); margin-bottom:16px; }
   .field-group { margin-bottom:12px; }
@@ -55,14 +55,20 @@
   }
   .field-group input:focus, .field-group textarea:focus { border-color:var(--accent); }
   .field-group .hint { font-size:11px; color:var(--text-dim); margin-top:2px; }
+
+  .run-bar {
+    padding:12px 24px; border-top:1px solid var(--border); background:var(--surface);
+    display:flex; align-items:center; gap:12px; flex-shrink:0;
+  }
   .run-btn {
     background:var(--accent); color:#fff; border:none; padding:10px 24px; border-radius:8px;
-    cursor:pointer; font-size:14px; font-weight:500; transition:0.15s; margin-top:8px;
+    cursor:pointer; font-size:14px; font-weight:500; transition:0.15s;
   }
   .run-btn:hover { background:var(--accent-hover); }
   .run-btn:disabled { opacity:0.4; cursor:not-allowed; }
+  .run-bar .latency-display { font-size:12px; color:var(--green); font-family:var(--mono); }
 
-  .tool-result { flex:1; overflow-y:auto; padding:20px 24px; }
+  .tool-result { overflow-y:auto; padding:20px 24px; flex:1; display:none; border-top:1px solid var(--border); }
   .result-header { font-size:12px; color:var(--text-dim); margin-bottom:8px; display:flex; align-items:center; gap:8px; }
   .result-header .latency { color:var(--green); }
   .result-pre {
@@ -73,7 +79,7 @@
   .empty-state { flex:1; display:flex; align-items:center; justify-content:center; color:var(--text-dim); font-size:14px; text-align:center; padding:32px; }
 
   /* Quick queries */
-  .quick-queries { padding:12px 24px 0; }
+  .quick-queries { margin-bottom:12px; }
   .quick-queries .label { font-size:11px; color:var(--text-dim); margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px; }
   .qq-list { display:flex; gap:6px; flex-wrap:wrap; }
   .qq {
@@ -144,7 +150,11 @@
       <div id="tool-form-area">
         <div class="empty-state" id="explore-empty">Select a tool from the list to get started.</div>
       </div>
-      <div class="tool-result" id="tool-result" style="display:none"></div>
+      <div class="run-bar" id="run-bar" style="display:none">
+        <button class="run-btn" id="run-btn" onclick="runTool()">▶ Run</button>
+        <span class="latency-display" id="run-latency"></span>
+      </div>
+      <div class="tool-result" id="tool-result"></div>
     </div>
   </div>
 </div>
@@ -244,6 +254,8 @@ function selectTool(name) {
   if (!selectedTool) return;
   document.querySelectorAll('.tool-item').forEach(el => el.classList.toggle('active', el.dataset.name === name));
   renderToolForm();
+  document.getElementById('run-bar').style.display = 'flex';
+  document.getElementById('run-latency').textContent = '';
   document.getElementById('tool-result').style.display = 'none';
 }
 
@@ -286,7 +298,6 @@ function renderToolForm() {
       <div class="desc">${esc(t.description)}</div>
       ${qqHtml}
       ${fieldsHtml || '<div style="color:var(--text-dim);font-size:13px;">This tool takes no arguments.</div>'}
-      <button class="run-btn" id="run-btn" onclick="runTool()">▶ Run</button>
     </div>`;
   document.getElementById('explore-empty')?.remove();
 }
@@ -321,8 +332,10 @@ async function runTool() {
   }
 
   const resultEl = document.getElementById('tool-result');
+  const latencyEl = document.getElementById('run-latency');
   resultEl.style.display = 'block';
   resultEl.innerHTML = '<div style="color:var(--text-dim);font-size:13px;">Running…</div>';
+  latencyEl.textContent = '';
   const t0 = performance.now();
 
   try {
@@ -332,14 +345,19 @@ async function runTool() {
     });
     const d = await r.json();
     const ms = Math.round(performance.now() - t0);
+    latencyEl.textContent = ms + 'ms';
     if (d.error) {
-      resultEl.innerHTML = `<div class="result-header">Error <span class="latency" style="color:var(--red)">${ms}ms</span></div><pre class="result-pre" style="color:var(--red)">${esc(JSON.stringify(d, null, 2))}</pre>`;
+      latencyEl.style.color = 'var(--red)';
+      resultEl.innerHTML = `<pre class="result-pre" style="color:var(--red)">${esc(JSON.stringify(d, null, 2))}</pre>`;
     } else {
+      latencyEl.style.color = 'var(--green)';
       const pretty = typeof d.result === 'string' ? d.result : JSON.stringify(d.result, null, 2);
-      resultEl.innerHTML = `<div class="result-header">Result <span class="latency">${ms}ms</span></div><pre class="result-pre">${esc(pretty)}</pre>`;
+      resultEl.innerHTML = `<pre class="result-pre">${esc(pretty)}</pre>`;
     }
   } catch(e) {
-    resultEl.innerHTML = `<div class="result-header" style="color:var(--red)">Network error</div><pre class="result-pre" style="color:var(--red)">${esc(e.message)}</pre>`;
+    latencyEl.textContent = 'error';
+    latencyEl.style.color = 'var(--red)';
+    resultEl.innerHTML = `<pre class="result-pre" style="color:var(--red)">${esc(e.message)}</pre>`;
   }
 
   btn.disabled = false; btn.textContent = '▶ Run';
