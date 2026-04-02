@@ -26,7 +26,7 @@ log = logging.getLogger("chat")
 
 MCP_SSE_URL = os.getenv("MCP_SSE_URL", "http://localhost:8050/sse")
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
-MODEL = os.getenv("CHAT_MODEL", "claude-haiku-4-20250414")
+MODEL = os.getenv("CHAT_MODEL", "claude-haiku-4-5-20251001")
 SYSTEM_PROMPT = (Path(__file__).parent / "system_prompt.txt").read_text()
 
 # Cached tool definitions (populated on first /api/chat request)
