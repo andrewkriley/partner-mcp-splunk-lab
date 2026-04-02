@@ -2,10 +2,10 @@
 
 [![Version](https://img.shields.io/github/v/release/andrewkriley/splunk-lab?label=version)](https://github.com/andrewkriley/splunk-lab/releases/latest)
 
-A demo environment for anyone looking to get a kick start with their Splunk learning journey in a self-hosted environment. Runs Splunk Enterprise in Docker with Buttercup Games sample data pre-loaded and the Splunk MCP server ready for Claude Code or Claude Desktop. Prefer a hosted option? Try the [Splunk Cloud 14-day free trial](https://www.splunk.com/en_us/download/splunk-cloud.html).
+A demo environment for anyone looking to get a kick start with their Splunk learning journey in a self-hosted environment. Runs Splunk Enterprise in Docker with Buttercup Games sample data pre-loaded, the Splunk MCP server ready for Claude Code or Claude Desktop, and a built-in **Ask Splunk** interface for exploring MCP tools and querying Splunk via natural language. Prefer a hosted option? Try the [Splunk Cloud 14-day free trial](https://www.splunk.com/en_us/download/splunk-cloud.html).
 
 ```
-docker compose up  →  Lab guide + Splunk Web UI + MCP server ready
+docker compose up  →  Lab guide + Splunk Web UI + MCP server + Ask Splunk ready
 ```
 
 **Lab guide (online preview):** https://andrewkriley.github.io/splunk-lab/
@@ -162,9 +162,17 @@ index=main sourcetype=my_sourcetype
 
 ---
 
-## Ask Splunk (Chat UI)
+## Ask Splunk
 
-The lab includes a built-in chat interface at `http://localhost:3000` that lets you ask natural-language questions about the Buttercup Games data. It connects Claude to Splunk through the MCP server — no Claude Desktop or Claude Code required.
+A two-tab interface at `http://localhost:3132` for exploring and querying Splunk through MCP:
+
+### Explore Tools (no API key required)
+
+The default tab lists all MCP tools with auto-generated forms, quick-query presets for common SPL operations, and raw JSON results. Use it to validate the MCP server works, learn the tool schemas, and run queries — no AI subscription needed.
+
+### Chat (optional — requires Anthropic API key)
+
+A natural-language chat interface that bridges Claude with Splunk via MCP tools. Ask questions in plain English and Claude will call the appropriate MCP tools to query Splunk and format the results.
 
 **Setup:** Add your Anthropic API key to `.env`:
 
@@ -172,9 +180,9 @@ The lab includes a built-in chat interface at `http://localhost:3000` that lets 
 ANTHROPIC_API_KEY=sk-ant-...
 ```
 
-Then restart: `docker compose up -d`. Open http://localhost:3000 and start asking questions.
+Then restart: `docker compose up -d`. Open http://localhost:3132 and switch to the **Chat** tab.
 
-> The chat UI requires an Anthropic API key. Without one, the container starts but shows a setup prompt. All other lab features work without it.
+> The Chat tab requires an Anthropic API key. The Explore Tools tab works without one. All other lab features are unaffected.
 
 ---
 
@@ -249,14 +257,14 @@ docker compose down -v
 
 All ports are bound to `127.0.0.1` and are only accessible from this machine.
 
-| Port | Service |
-|---|---|
-| `3000` | Ask Splunk Chat UI |
-| `3131` | Lab Guide |
-| `8000` | Splunk Web UI |
-| `8088` | HTTP Event Collector (HEC) |
-| `8089` | Splunk REST API |
-| `8050` | Splunk MCP Server (SSE) |
+| Port | Service | Configurable via |
+|---|---|---|
+| `3131` | Lab Guide | `LAB_GUIDE_PORT` |
+| `3132` | Ask Splunk Chat UI | `CHAT_PORT` |
+| `8000` | Splunk Web UI | — |
+| `8050` | Splunk MCP Server (SSE) | — |
+| `8088` | HTTP Event Collector (HEC) | — |
+| `8089` | Splunk REST API | — |
 
 ---
 
