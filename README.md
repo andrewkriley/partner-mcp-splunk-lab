@@ -164,7 +164,7 @@ index=main sourcetype=my_sourcetype
 
 ## Ask Splunk (Chat UI)
 
-The lab includes a built-in chat interface at `http://localhost:3000` that lets you ask natural-language questions about the Buttercup Games data. It connects Claude to Splunk through the MCP server — no Claude Desktop or Claude Code required.
+The lab includes a built-in chat interface at `http://localhost:3132` that lets you ask natural-language questions about the Buttercup Games data. It connects Claude to Splunk through the MCP server — no Claude Desktop or Claude Code required.
 
 **Setup:** Add your Anthropic API key to `.env`:
 
@@ -172,7 +172,7 @@ The lab includes a built-in chat interface at `http://localhost:3000` that lets 
 ANTHROPIC_API_KEY=sk-ant-...
 ```
 
-Then restart: `docker compose up -d`. Open http://localhost:3000 and start asking questions.
+Then restart: `docker compose up -d`. Open http://localhost:3132 and start asking questions.
 
 > The chat UI requires an Anthropic API key. Without one, the container starts but shows a setup prompt. All other lab features work without it.
 
@@ -249,14 +249,14 @@ docker compose down -v
 
 All ports are bound to `127.0.0.1` and are only accessible from this machine.
 
-| Port | Service |
-|---|---|
-| `3000` | Ask Splunk Chat UI |
-| `3131` | Lab Guide |
-| `8000` | Splunk Web UI |
-| `8088` | HTTP Event Collector (HEC) |
-| `8089` | Splunk REST API |
-| `8050` | Splunk MCP Server (SSE) |
+| Port | Service | Configurable via |
+|---|---|---|
+| `3131` | Lab Guide | `LAB_GUIDE_PORT` |
+| `3132` | Ask Splunk Chat UI | `CHAT_PORT` |
+| `8000` | Splunk Web UI | — |
+| `8050` | Splunk MCP Server (SSE) | — |
+| `8088` | HTTP Event Collector (HEC) | — |
+| `8089` | Splunk REST API | — |
 
 ---
 

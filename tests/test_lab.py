@@ -159,12 +159,14 @@ class TestHEC:
 
 class TestLabGuide:
     def test_lab_guide_port_is_open(self):
-        """Lab guide nginx should be listening on port 3131."""
+        """Lab guide nginx should be listening on its configured port."""
+        from urllib.parse import urlparse
+        port = urlparse(LAB_GUIDE_URL).port or 3131
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(5)
-        result = sock.connect_ex(("localhost", 3131))
+        result = sock.connect_ex(("localhost", port))
         sock.close()
-        assert result == 0, "Could not connect to lab guide on port 3131"
+        assert result == 0, f"Could not connect to lab guide on port {port}"
 
     def test_lab_guide_returns_html(self):
         """Lab guide should return HTTP 200 with HTML content."""
