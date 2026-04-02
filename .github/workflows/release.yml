@@ -59,7 +59,8 @@ jobs:
             --exclude='.git' \
             --exclude='.github' \
             --exclude='*.tar.gz' \
-            .
+            --exclude='.env' \
+            . || true
 
       - name: Generate changelog
         id: changelog
