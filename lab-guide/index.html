@@ -740,21 +740,175 @@ cd splunk-lab</code>
         <!-- ── Documentation ─────────────────────────────────────────────── -->
         <div class="step-page" id="step-4">
             <h1>Documentation</h1>
-            <p class="intro">Reference guides, configuration details, and architecture documentation for the Splunk Lab.</p>
+            <p class="intro">Architecture, configuration reference, and guides for the Splunk Lab.</p>
 
+            <!-- ── Architecture ── -->
+            <h2>Architecture</h2>
+            <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">Five Docker Compose services connected on an internal bridge network. All host ports are bound to <code>127.0.0.1</code> — accessible from your machine only.</p>
+
+            <div class="card">
+                <table>
+                    <thead>
+                        <tr><th>Service</th><th>Image / Build</th><th>Port</th><th>Role</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>splunk</strong></td>
+                            <td><code>splunk/splunk:10.2.1</code></td>
+                            <td><code>8000</code> <code>8088</code> <code>8089</code></td>
+                            <td>Splunk Enterprise — Web UI, HEC, REST API. Buttercup sample data auto-indexed on boot.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>splunk-mcp</strong></td>
+                            <td><code>mcp/Dockerfile</code></td>
+                            <td><code>8050</code></td>
+                            <td>MCP server (SSE). Bridges Claude / Ask Splunk to Splunk search, indexes, and saved searches.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>chat</strong></td>
+                            <td><code>chat/Dockerfile</code></td>
+                            <td><code>${CHAT_PORT}</code></td>
+                            <td>Ask Splunk — MCP Tool Explorer (no API key) + Chat (optional Anthropic key).</td>
+                        </tr>
+                        <tr>
+                            <td><strong>lab-guide</strong></td>
+                            <td><code>nginx:alpine</code></td>
+                            <td><code>${LAB_GUIDE_PORT}</code></td>
+                            <td>This page. Static HTML served by nginx, proxies <code>/api/status</code> to status-api.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>status-api</strong></td>
+                            <td><code>status-api/Dockerfile</code></td>
+                            <td>8081 (internal)</td>
+                            <td>Health-check sidecar. Probes container states and service endpoints via Docker API.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>Data flow</h3>
+            <div class="card" style="padding:20px;font-size:13px;font-family:'SF Mono',monospace;line-height:2;color:var(--text-secondary);overflow-x:auto;white-space:pre;">User ──▶ Ask Splunk (chat) ──▶ Anthropic API
+              │                              │ tool_use
+              │                              ▼
+              │                     MCP Server (:8050)
+              │                              │ SSE
+              │                              ▼
+              └──────────────────▶ Splunk Enterprise (:8089)
+                                         │
+                    ┌────────────────────┼────────────────────┐
+                    ▼                    ▼                    ▼
+             buttercup_web      buttercup_sales      buttercup_products</div>
+
+            <h3>Networking</h3>
+            <p style="font-size:13px;color:var(--text-secondary);line-height:1.6;margin-bottom:16px;">Containers communicate on the <code>splunk-lab_default</code> bridge network using service names as hostnames (e.g. <code>splunk-mcp</code> connects to <code>splunk:8089</code>). Host port bindings are <code>127.0.0.1</code>-only — not accessible from other machines. No authentication on the MCP endpoint by design.</p>
+
+            <h3>Volumes</h3>
+            <div class="card">
+                <table>
+                    <thead>
+                        <tr><th>Volume / Mount</th><th>Purpose</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>splunk-var</code></td><td>Named volume — persists Splunk indexes and data across restarts. Deleted on <code>docker compose down -v</code>.</td></tr>
+                        <tr><td><code>./buttercup_app</code></td><td>Bind mount — Buttercup sample data app auto-loaded by Splunk at boot.</td></tr>
+                        <tr><td><code>./lab-guide</code></td><td>Bind mount (read-only) — this lab guide, served by nginx.</td></tr>
+                        <tr><td><code>/var/run/docker.sock</code></td><td>Bind mount (read-only) — gives status-api read access to container states.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- ── Configuration Reference ── -->
+            <h2 style="margin-top:36px;">Configuration Reference</h2>
+            <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">All configuration lives in <code>.env</code> (gitignored). Copy <code>.env.example</code> to <code>.env</code> before starting. Variables are read by Docker Compose at startup.</p>
+
+            <h3>Required</h3>
+            <div class="card">
+                <table>
+                    <thead>
+                        <tr><th>Variable</th><th>Default</th><th>Description</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>SPLUNK_PASSWORD</code></td>
+                            <td><code>Chang3d!</code></td>
+                            <td>Splunk <code>admin</code> password. Must be ≥8 chars with letters + numbers.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>Optional</h3>
+            <div class="card">
+                <table>
+                    <thead>
+                        <tr><th>Variable</th><th>Default</th><th>Description</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>SPLUNK_HEC_TOKEN</code></td>
+                            <td><code>a8b4c2d6-…</code></td>
+                            <td>Pre-set HEC token. Any UUID works — set before boot so you can send events immediately.</td>
+                        </tr>
+                        <tr>
+                            <td><code>LAB_GUIDE_PORT</code></td>
+                            <td><code>3131</code></td>
+                            <td>Host port for this lab guide.</td>
+                        </tr>
+                        <tr>
+                            <td><code>CHAT_PORT</code></td>
+                            <td><code>3132</code></td>
+                            <td>Host port for Ask Splunk.</td>
+                        </tr>
+                        <tr>
+                            <td><code>ANTHROPIC_API_KEY</code></td>
+                            <td><em>unset</em></td>
+                            <td>Enables the Chat tab in Ask Splunk. The Explore Tools tab works without it.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>MCP server environment</h3>
+            <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;">Set automatically by Docker Compose. Only change if you know what you're doing.</p>
+            <div class="card">
+                <table>
+                    <thead>
+                        <tr><th>Variable</th><th>Value</th><th>Notes</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>SPLUNK_HOST</code></td><td><code>splunk</code></td><td>Hostname only — the MCP client prepends <code>https://</code>.</td></tr>
+                        <tr><td><code>SPLUNK_PORT</code></td><td><code>8089</code></td><td>Splunk REST API port (internal).</td></tr>
+                        <tr><td><code>VERIFY_SSL</code></td><td><code>false</code></td><td>Splunk uses a self-signed cert locally.</td></tr>
+                        <tr><td><code>TRANSPORT</code></td><td><code>sse</code></td><td>MCP transport mode. SSE is required for web clients.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>Common commands</h3>
+            <div class="search-card">
+                <div class="search-header"><span class="search-title">Start the lab</span><button class="copy-btn" onclick="copySearch(this)">Copy</button></div>
+                <div class="search-spl">docker compose up -d</div>
+            </div>
+            <div class="search-card">
+                <div class="search-header"><span class="search-title">Watch Splunk startup (ready when "Ansible playbook complete" appears)</span><button class="copy-btn" onclick="copySearch(this)">Copy</button></div>
+                <div class="search-spl">docker compose logs -f splunk</div>
+            </div>
+            <div class="search-card">
+                <div class="search-header"><span class="search-title">Stop containers (data preserved)</span><button class="copy-btn" onclick="copySearch(this)">Copy</button></div>
+                <div class="search-spl">docker compose down</div>
+            </div>
+            <div class="search-card">
+                <div class="search-header"><span class="search-title">Full reset — wipe all indexed data</span><button class="copy-btn" onclick="copySearch(this)">Copy</button></div>
+                <div class="search-spl">docker compose down -v</div>
+            </div>
+            <div class="search-card">
+                <div class="search-header"><span class="search-title">Run integration tests</span><button class="copy-btn" onclick="copySearch(this)">Copy</button></div>
+                <div class="search-spl">pip install -r requirements-test.txt &amp;&amp; pytest tests/ -v</div>
+            </div>
+
+            <!-- ── Coming Soon ── -->
+            <h2 style="margin-top:36px;">Coming Soon</h2>
             <div class="coming-grid">
-                <div class="coming-card">
-                    <div class="coming-icon">🏗️</div>
-                    <div class="coming-title">Architecture Guide</div>
-                    <div class="coming-desc">How the lab components fit together — containers, networking, volumes, and data flow.</div>
-                    <span class="coming-tag">Coming soon</span>
-                </div>
-                <div class="coming-card">
-                    <div class="coming-icon">⚙️</div>
-                    <div class="coming-title">Configuration Reference</div>
-                    <div class="coming-desc">All environment variables, <code>.env</code> settings, and Docker Compose overrides.</div>
-                    <span class="coming-tag">Coming soon</span>
-                </div>
                 <div class="coming-card">
                     <div class="coming-icon">🔭</div>
                     <div class="coming-title">OpenTelemetry Setup</div>
