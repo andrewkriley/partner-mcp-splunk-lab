@@ -45,7 +45,7 @@ services:
       TRANSPORT: sse
       HOST: 0.0.0.0
       PORT: 8050
-      SPLUNK_HOST: https://splunk                   # full URL required — internal Docker network
+      SPLUNK_HOST: splunk                             # hostname only — SplunkClient prepends https://
       SPLUNK_PORT: 8089                            # Splunk REST API port
       SPLUNK_USERNAME: admin
       SPLUNK_PASSWORD: ${SPLUNK_PASSWORD}

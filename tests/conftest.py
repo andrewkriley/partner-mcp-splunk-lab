@@ -4,8 +4,11 @@ import socket
 import requests
 import urllib3
 import pytest
+import pytest_asyncio
 from pathlib import Path
 from dotenv import load_dotenv
+from mcp import ClientSession
+from mcp.client.sse import sse_client
 
 # Load .env for local dev — silently skipped in CI where .env is created from .env.example
 load_dotenv(Path(__file__).parent.parent / ".env")
@@ -103,3 +106,26 @@ def run_search(session, spl, timeout=30):
     )
     resp.raise_for_status()
     return resp.json().get("results", [])
+
+
+# ── MCP client helpers ────────────────────────────────────────────────────
+
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def mcp_connect():
+    """Connect to the MCP server over SSE and yield an initialized ClientSession.
+
+    Usage in tests::
+
+        async with mcp_connect() as session:
+            result = await session.list_tools()
+
+    Using an explicit context manager (not a pytest fixture) avoids the
+    anyio cancel-scope teardown issue where pytest-asyncio finalises the
+    fixture in a different task.
+    """
+    async with sse_client(url=f"{MCP_URL}/sse") as streams:
+        async with ClientSession(*streams) as session:
+            await session.initialize()
+            yield session
