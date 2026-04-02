@@ -40,7 +40,7 @@ docker compose ps
 
 ## Architecture
 
-Four services run in Docker Compose:
+Five services run in Docker Compose:
 
 - **splunk** (`splunk/splunk:10.2.1`) — Splunk Enterprise. All ports bound to `127.0.0.1`. Data persisted in the `splunk-var` named volume. The `buttercup_app/` directory is bind-mounted into `/opt/splunk/etc/apps/buttercup_app` and auto-indexed on first boot.
 
@@ -49,6 +49,8 @@ Four services run in Docker Compose:
 - **lab-guide** (`nginx:alpine`) — Static lab guide served at `127.0.0.1:3131`. Mounts `lab-guide/` as the web root and `lab-guide/nginx.conf` as the nginx config. Proxies `/api/status` to `status-api:8081` so the status dashboard can poll from the browser without a separate port.
 
 - **status-api** (built from `status-api/Dockerfile`) — Python sidecar that exposes `GET /api/status` on port 8081 (internal only). Uses the Docker SDK via a read-only `docker.sock` mount to check container states and probes Splunk Web and MCP HTTP endpoints for service health.
+
+- **chat** (built from `chat/Dockerfile`) — "Ask Splunk" chat UI served at `127.0.0.1:3000`. FastAPI backend bridges the Anthropic Messages API with the MCP server — Claude uses MCP tools to query Splunk and returns natural-language answers. Requires `ANTHROPIC_API_KEY` in `.env`. Gracefully degrades without it.
 
 ## Buttercup app
 

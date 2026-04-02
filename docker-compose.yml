@@ -92,5 +92,23 @@ services:
         limits:
           memory: 128m
 
+  # ── Ask Splunk Chat ────────────────────────────────────────────────────────
+  chat:
+    build:
+      context: ./chat
+    container_name: chat
+    environment:
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      MCP_SSE_URL: http://splunk-mcp:8050/sse
+    ports:
+      - "127.0.0.1:3000:3000"   # Chat UI — localhost only
+    depends_on:
+      - splunk-mcp
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 128m
+
 volumes:
   splunk-var:    # named volume — Splunk indexes and data persist here

@@ -1,0 +1,5 @@
+anthropic>=0.40
+fastapi>=0.115
+uvicorn>=0.32
+mcp>=1.6
+httpx-sse>=0.4
