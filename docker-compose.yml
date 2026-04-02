@@ -45,7 +45,7 @@ services:
       TRANSPORT: sse
       HOST: 0.0.0.0
       PORT: 8050
-      SPLUNK_HOST: https://splunk                   # full URL required — internal Docker network
+      SPLUNK_HOST: splunk                             # hostname only — SplunkClient prepends https://
       SPLUNK_PORT: 8089                            # Splunk REST API port
       SPLUNK_USERNAME: admin
       SPLUNK_PASSWORD: ${SPLUNK_PASSWORD}
@@ -86,6 +86,24 @@ services:
     container_name: status-api
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro   # read-only docker access for container checks
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 128m
+
+  # ── Ask Splunk Chat ────────────────────────────────────────────────────────
+  chat:
+    build:
+      context: ./chat
+    container_name: chat
+    environment:
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      MCP_SSE_URL: http://splunk-mcp:8050/sse
+    ports:
+      - "127.0.0.1:3000:3000"   # Chat UI — localhost only
+    depends_on:
+      - splunk-mcp
     restart: unless-stopped
     deploy:
       resources:

@@ -21,3 +21,7 @@
 .venv/
 __pycache__/
 *.pyc
+
+# Cloud Agent VM artifacts
+docker-compose.cloud.yml
+.splunk-var/
