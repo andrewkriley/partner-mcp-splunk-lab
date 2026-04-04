@@ -21,6 +21,7 @@ services:
     volumes:
       - splunk-var:/opt/splunk/var                                          # persist indexes across restarts
       - ./buttercup_app:/opt/splunk/etc/apps/buttercup_app                  # Buttercup sample data app
+      - ./otel_app:/opt/splunk/etc/apps/otel_app                            # OTLP/HEC index definition
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost:8000/en-US/account/login"]
       interval: 15s

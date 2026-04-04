@@ -45,7 +45,7 @@ docker compose --profile otel up -d
 
 Five services run in Docker Compose by default; a **sixth** optional service starts with **`--profile otel`**:
 
-- **splunk** (`splunk/splunk:10.2.1`) — Splunk Enterprise. All ports bound to `127.0.0.1`. Data persisted in the `splunk-var` named volume. The `buttercup_app/` directory is bind-mounted into `/opt/splunk/etc/apps/buttercup_app` and auto-indexed on first boot.
+- **splunk** (`splunk/splunk:10.2.1`) — Splunk Enterprise. All ports bound to `127.0.0.1`. Data persisted in the `splunk-var` named volume. `buttercup_app/` is mounted as `/opt/splunk/etc/apps/buttercup_app` (sample data). `otel_app/` is mounted as `/opt/splunk/etc/apps/otel_app` and defines the `otel` index for OTLP→HEC.
 
 - **splunk-mcp** (built from `mcp/Dockerfile`) — Official Splunk MCP server (`splunk-mcp-server` npm package). Runs in SSE mode on `127.0.0.1:8050`. Connects to Splunk via internal Docker networking on `splunk:8089`. No MCP endpoint auth — localhost-only by design.
 
