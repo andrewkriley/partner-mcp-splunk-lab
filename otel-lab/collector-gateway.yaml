@@ -14,6 +14,12 @@ receivers:
         endpoint: 0.0.0.0:4318
 
 processors:
+  # Ensures HEC events target the otel index (Splunk maps com.splunk.index → index metadata).
+  resource/splunk_index:
+    attributes:
+      - key: com.splunk.index
+        value: otel
+        action: upsert
   batch: {}
 
 exporters:
@@ -32,13 +38,13 @@ service:
   pipelines:
     traces:
       receivers: [otlp]
-      processors: [batch]
+      processors: [resource/splunk_index, batch]
       exporters: [splunk_hec]
     metrics:
       receivers: [otlp]
-      processors: [batch]
+      processors: [resource/splunk_index, batch]
       exporters: [splunk_hec]
     logs:
       receivers: [otlp]
-      processors: [batch]
+      processors: [resource/splunk_index, batch]
       exporters: [splunk_hec]

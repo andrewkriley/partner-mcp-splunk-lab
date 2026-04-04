@@ -162,7 +162,7 @@ index=main sourcetype=my_sourcetype
 
 ### OpenTelemetry Protocol (OTLP) into Splunk (optional)
 
-An **OpenTelemetry Collector** runs as **`splunk-otel-gateway`** when you use Compose profile **`otel`**. It listens for **OTLP** on **localhost** (defaults **24317** gRPC, **24318** HTTP) and forwards traces, metrics, and logs to Splunk **HEC** using `SPLUNK_HEC_TOKEN` from `.env`. Data lands in the **`otel`** index (sourcetype **`otlp_gateway`**).
+An **OpenTelemetry Collector** runs as **`splunk-otel-gateway`** when you use Compose profile **`otel`**. It listens for **OTLP** on **localhost** (defaults **24317** gRPC, **24318** HTTP) and forwards traces, metrics, and logs to Splunk **HEC** using `SPLUNK_HEC_TOKEN` from `.env`. All OTLP telemetry is routed to the dedicated **`otel`** index (defined in `buttercup_app/default/indexes.conf`), sourcetype **`otlp_gateway`**. Verify with `index=otel`.
 
 ```bash
 docker compose --profile otel up -d
