@@ -28,6 +28,10 @@ docker compose down
 # Full reset — wipe all indexed data
 docker compose down -v
 
+# Splunk + shared Docker network for the optional OpenTelemetry Demo (see otel-demo/README.md)
+docker network create splunk-lab-otel 2>/dev/null || true
+docker compose -f docker-compose.yml -f docker-compose.otel-bridge.yml up -d
+
 # Rebuild the MCP server image after changes to mcp/Dockerfile
 docker compose build splunk-mcp
 

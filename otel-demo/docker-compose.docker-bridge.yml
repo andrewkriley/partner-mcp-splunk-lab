@@ -1,0 +1,23 @@
+# OpenTelemetry Demo override: join the Splunk lab bridge network and pass HEC settings
+# into the collector. Use together with start-with-splunk.sh or:
+#
+#   docker network create splunk-lab-otel 2>/dev/null || true
+#   export OTEL_COLLECTOR_CONFIG_EXTRAS=/absolute/path/to/splunk-lab/otel-demo/otelcol-config-splunk-hec.yml
+#   docker compose -f docker-compose.yml -f /absolute/path/to/splunk-lab/otel-demo/docker-compose.docker-bridge.yml \
+#     --env-file /absolute/path/to/splunk-lab/.env up -d
+#
+# Requires SPLUNK_HEC_TOKEN in the env file (same value as the Splunk lab).
+
+networks:
+  splunk-lab-otel:
+    external: true
+    name: splunk-lab-otel
+
+services:
+  otel-collector:
+    networks:
+      - default
+      - splunk-lab-otel
+    environment:
+      - SPLUNK_HEC_TOKEN
+      - SPLUNK_HEC_URL=https://splunk:8088/services/collector

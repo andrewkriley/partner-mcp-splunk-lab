@@ -38,6 +38,23 @@ class TestDockerCompose:
         )
         assert result.returncode == 0, result.stderr.decode()
 
+    def test_compose_otel_bridge_config_is_valid(self):
+        """Optional OTel bridge overlay must merge cleanly with the base compose file."""
+        result = subprocess.run(
+            [
+                "docker",
+                "compose",
+                "-f",
+                "docker-compose.yml",
+                "-f",
+                "docker-compose.otel-bridge.yml",
+                "config",
+                "--quiet",
+            ],
+            capture_output=True,
+        )
+        assert result.returncode == 0, result.stderr.decode()
+
 
 # ── Splunk health ──────────────────────────────────────────────────────────
 

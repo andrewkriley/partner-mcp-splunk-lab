@@ -1,0 +1,19 @@
+# Optional Compose fragment: attach Splunk to a shared Docker network so other stacks
+# (e.g. the OpenTelemetry Demo) can reach it by hostname "splunk" on port 8088 (HEC).
+#
+# Usage (from this repo root, after a normal .env is configured):
+#   docker network create splunk-lab-otel 2>/dev/null || true
+#   docker compose -f docker-compose.yml -f docker-compose.otel-bridge.yml up -d
+#
+# The lab guide, MCP, and Splunk Web stay on localhost-only ports as in the base file.
+
+networks:
+  splunk-lab-otel:
+    name: splunk-lab-otel
+    driver: bridge
+
+services:
+  splunk:
+    networks:
+      - default
+      - splunk-lab-otel

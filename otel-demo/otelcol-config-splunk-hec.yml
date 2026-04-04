@@ -1,0 +1,31 @@
+# Splunk HEC export for the OpenTelemetry Demo collector (otelcol contrib).
+# Loaded as the second --config file after the demo's otelcol-config.yml.
+#
+# Keep pipeline receivers/processors in sync with the demo's src/otel-collector/otelcol-config.yml
+# when upgrading IMAGE_VERSION (see otel-demo/README.md).
+
+exporters:
+  splunk_hec:
+    endpoint: ${env:SPLUNK_HEC_URL}
+    token: ${env:SPLUNK_HEC_TOKEN}
+    index: otel
+    sourcetype: otel_demo
+    use_multi_metric_format: true
+    tls:
+      insecure_skip_verify: true
+    timeout: 15s
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [resourcedetection, memory_limiter, transform, batch]
+      exporters: [otlp, debug, spanmetrics, splunk_hec]
+    metrics:
+      receivers: [docker_stats, httpcheck/frontend-proxy, hostmetrics, nginx, otlp, postgresql, redis, spanmetrics]
+      processors: [resourcedetection, memory_limiter, batch]
+      exporters: [otlphttp/prometheus, debug, splunk_hec]
+    logs:
+      receivers: [otlp]
+      processors: [resourcedetection, memory_limiter, batch]
+      exporters: [opensearch, debug, splunk_hec]

@@ -160,6 +160,16 @@ Then search for your events:
 index=main sourcetype=my_sourcetype
 ```
 
+### OpenTelemetry Demo (optional)
+
+Run the **[official OpenTelemetry Astronomy Shop](https://github.com/open-telemetry/opentelemetry-demo)** as a **separate** Docker Compose project and forward **traces, metrics, and logs** into Splunk via HEC (`index=otel`, sourcetype `otel_demo`).
+
+1. Create a shared network: `docker network create splunk-lab-otel`
+2. Start Splunk with the bridge file: `docker compose -f docker-compose.yml -f docker-compose.otel-bridge.yml up -d`
+3. Clone the demo (pin to **2.1.3** or see compatibility notes) and run **`otel-demo/start-with-splunk.sh`**
+
+Full steps, manual `docker compose` overrides, and upgrade notes: **[otel-demo/README.md](otel-demo/README.md)**.
+
 ---
 
 ## Ask Splunk
