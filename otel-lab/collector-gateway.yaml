@@ -1,0 +1,44 @@
+# Splunk lab — optional OTLP gateway (Compose profile: otel).
+# Listens on container ports 4317 (gRPC) and 4318 (HTTP); mapped to localhost by docker-compose.yml.
+
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch: {}
+
+exporters:
+  splunk_hec:
+    endpoint: https://splunk:8088/services/collector
+    token: ${env:SPLUNK_HEC_TOKEN}
+    index: otel
+    sourcetype: otlp_gateway
+    use_multi_metric_format: true
+    tls:
+      insecure_skip_verify: true
+    timeout: 15s
+
+service:
+  extensions: [health_check]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [splunk_hec]
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [splunk_hec]
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [splunk_hec]

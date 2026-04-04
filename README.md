@@ -160,6 +160,16 @@ Then search for your events:
 index=main sourcetype=my_sourcetype
 ```
 
+### OpenTelemetry Protocol (OTLP) into Splunk (optional)
+
+An **OpenTelemetry Collector** runs as **`splunk-otel-gateway`** when you use Compose profile **`otel`**. It listens for **OTLP** on **localhost** (defaults **24317** gRPC, **24318** HTTP) and forwards traces, metrics, and logs to Splunk **HEC** using `SPLUNK_HEC_TOKEN` from `.env`. Data lands in the **`otel`** index (sourcetype **`otlp_gateway`**).
+
+```bash
+docker compose --profile otel up -d
+```
+
+Point any OTLP exporter at `http://localhost:24318` (HTTP) or `localhost:24317` (gRPC). Override ports with `SPLUNK_OTEL_GRPC_PORT` / `SPLUNK_OTEL_HTTP_PORT` in `.env`. The default lab without `--profile otel` is unchanged.
+
 ---
 
 ## Ask Splunk

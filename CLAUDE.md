@@ -36,11 +36,14 @@ docker compose build status-api
 
 # Check container health
 docker compose ps
+
+# Optional: OTLP → Splunk HEC gateway (OpenTelemetry Collector contrib)
+docker compose --profile otel up -d
 ```
 
 ## Architecture
 
-Five services run in Docker Compose:
+Five services run in Docker Compose by default; a **sixth** optional service starts with **`--profile otel`**:
 
 - **splunk** (`splunk/splunk:10.2.1`) — Splunk Enterprise. All ports bound to `127.0.0.1`. Data persisted in the `splunk-var` named volume. The `buttercup_app/` directory is bind-mounted into `/opt/splunk/etc/apps/buttercup_app` and auto-indexed on first boot.
 
@@ -51,6 +54,8 @@ Five services run in Docker Compose:
 - **status-api** (built from `status-api/Dockerfile`) — Python sidecar that exposes `GET /api/status` on port 8081 (internal only). Uses the Docker SDK via a read-only `docker.sock` mount to check container states and probes Splunk Web and MCP HTTP endpoints for service health.
 
 - **chat** (built from `chat/Dockerfile`) — "Ask Splunk" chat UI served at `127.0.0.1:${CHAT_PORT}` (default `3132`). FastAPI backend bridges the Anthropic Messages API with the MCP server — Claude uses MCP tools to query Splunk and returns natural-language answers. Requires `ANTHROPIC_API_KEY` in `.env`. Gracefully degrades without it.
+
+- **splunk-otel-gateway** (profile **`otel`**, `otel-lab/collector-gateway.yaml`) — OpenTelemetry Collector Contrib accepts **OTLP** on `127.0.0.1:24317/24318` (defaults) and exports to Splunk HEC at `https://splunk:8088`.
 
 ## Buttercup app
 

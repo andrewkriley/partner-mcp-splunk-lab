@@ -31,7 +31,8 @@ HTTP_CHECKS = [
 ]
 
 OTEL_CHECKS = [
-    {"name": "OTEL Collector", "container": "otel-collector", "url": "http://otel-collector:4318"},
+    {"name": "Splunk OTLP gateway", "container": "splunk-otel-gateway", "url": "http://splunk-otel-gateway:13133"},
+    {"name": "OTEL Collector",      "container": "otel-collector",      "url": "http://otel-collector:4318"},
     {"name": "Jaeger",         "container": "jaeger",         "url": "http://jaeger:16686"},
     {"name": "Prometheus",     "container": "prometheus",     "url": "http://prometheus:9090"},
     {"name": "Grafana",        "container": "grafana",        "url": "http://grafana:3000"},

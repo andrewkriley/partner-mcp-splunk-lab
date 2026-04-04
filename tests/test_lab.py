@@ -38,6 +38,14 @@ class TestDockerCompose:
         )
         assert result.returncode == 0, result.stderr.decode()
 
+    def test_compose_otel_profile_config_is_valid(self):
+        """Optional otel profile (splunk-otel-gateway) must resolve."""
+        result = subprocess.run(
+            ["docker", "compose", "--profile", "otel", "config", "--quiet"],
+            capture_output=True,
+        )
+        assert result.returncode == 0, result.stderr.decode()
+
 
 # ── Splunk health ──────────────────────────────────────────────────────────
 

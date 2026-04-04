@@ -34,6 +34,31 @@ services:
         reservations:
           memory: 2g
 
+  # ── OpenTelemetry Collector gateway (optional) ────────────────────────────
+  # Accepts OTLP (gRPC + HTTP) on localhost and forwards traces, metrics, logs to Splunk HEC.
+  # Start: docker compose --profile otel up -d
+  splunk-otel-gateway:
+    profiles: ["otel"]
+    image: ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib:0.146.1
+    container_name: splunk-otel-gateway
+    command: ["--config=/etc/otel/collector-gateway.yaml"]
+    user: 0:0
+    environment:
+      SPLUNK_HEC_TOKEN: ${SPLUNK_HEC_TOKEN}
+    volumes:
+      - ./otel-lab/collector-gateway.yaml:/etc/otel/collector-gateway.yaml:ro
+    ports:
+      - "127.0.0.1:${SPLUNK_OTEL_GRPC_PORT:-24317}:4317"
+      - "127.0.0.1:${SPLUNK_OTEL_HTTP_PORT:-24318}:4318"
+    depends_on:
+      splunk:
+        condition: service_started
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+    restart: unless-stopped
+
   # ── Splunk MCP Server ──────────────────────────────────────────────────────
   splunk-mcp:
     build:
