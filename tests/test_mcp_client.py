@@ -88,7 +88,7 @@ class TestMCPToolExecution:
         """validate_spl should return a risk assessment for a query."""
         async with mcp_connect() as session:
             result = await session.call_tool("validate_spl", arguments={
-                "query": "index=buttercup | stats count",
+                "query": "index=buttercup earliest=0 latest=now | stats count",
             })
             text = _extract_text(result)
             data = json.loads(text)
@@ -110,7 +110,7 @@ class TestMCPToolExecution:
             result = await session.call_tool(
                 "search_oneshot",
                 arguments={
-                    "query": "index=buttercup sourcetype=buttercup_sales | stats count",
+                    "query": "index=buttercup earliest=0 latest=now sourcetype=buttercup_sales | stats count",
                     "earliest_time": "0",
                     "latest_time": "now",
                 },
@@ -128,7 +128,7 @@ class TestMCPToolExecution:
                 "search_oneshot",
                 arguments={
                     "query": (
-                        "index=buttercup sourcetype=buttercup_sales "
+                        "index=buttercup earliest=0 latest=now sourcetype=buttercup_sales "
                         "| stats sum(revenue) as total_revenue by vendor "
                         "| sort -total_revenue"
                     ),

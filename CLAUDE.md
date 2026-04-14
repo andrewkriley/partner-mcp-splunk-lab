@@ -62,6 +62,8 @@ Five services run in Docker Compose:
 
 Data lands in the `buttercup` index under sourcetypes `buttercup_web`, `buttercup_sales`, and `buttercup_products`.
 
+**Searching in Splunk Web:** Buttercup events use **January 2025** timestamps. Splunk Search defaults to a short recent window (for example **Last 24 hours**), which often returns **no rows** outside that window. Use **All time** in the time picker, or add `earliest=0 latest=now` to SPL after `index=buttercup` (see README and lab guide examples).
+
 ## Environment variables
 
 All runtime config lives in `.env` (gitignored). See `.env.example` for the full reference. The only required variable is `SPLUNK_PASSWORD`. `SPLUNK_HEC_TOKEN` pre-sets the HEC token so it's known before boot.

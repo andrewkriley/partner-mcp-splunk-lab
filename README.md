@@ -80,6 +80,8 @@ When you see `Ansible playbook complete`, Splunk is ready.
 
 Buttercup Games sample data is automatically indexed at startup — no manual steps required.
 
+**Splunk Search time range:** sample timestamps are in **January 2025**. In **Search & Reporting**, set the time picker to **All time** (or paste SPL that includes `earliest=0 latest=now` after `index=buttercup`). The default **Last 24 hours** often shows no events for this lab.
+
 ---
 
 ## What's included
