@@ -1,8 +1,1 @@
-{
-  "mcpServers": {
-    "splunk": {
-      "command": "npx",
-      "args": ["-y", "mcp-remote@0.1.38", "http://localhost:8050/sse"]
-    }
-  }
-}
+{"mcpServers":{"splunk-lab-guide":{"command":"npx","args":["-y","mcp-remote@0.1.38","http://localhost:8050/sse"]}}}

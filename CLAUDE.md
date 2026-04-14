@@ -79,7 +79,7 @@ The project ships `.claude/settings.json` with the MCP server pre-configured for
 ```json
 {
   "mcpServers": {
-    "splunk": {
+    "splunk-lab-guide": {
       "command": "npx",
       "args": ["-y", "mcp-remote@0.1.38", "http://localhost:8050/sse"]
     }
@@ -94,7 +94,7 @@ The project ships `.claude/settings.json` with the MCP server pre-configured for
 ```json
 {
   "mcpServers": {
-    "splunk-lab": {
+    "splunk-lab-guide": {
       "command": "npx",
       "args": ["-y", "mcp-remote@0.1.38", "http://localhost:8050/sse"]
     }

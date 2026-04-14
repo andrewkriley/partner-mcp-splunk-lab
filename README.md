@@ -207,7 +207,7 @@ If you need to add it manually:
 ```json
 {
   "mcpServers": {
-    "splunk": {
+    "splunk-lab-guide": {
       "command": "npx",
       "args": ["-y", "mcp-remote@0.1.38", "http://localhost:8050/sse"]
     }
@@ -231,7 +231,7 @@ Add the following `mcpServers` block:
 ```json
 {
   "mcpServers": {
-    "splunk-lab": {
+    "splunk-lab-guide": {
       "command": "npx",
       "args": ["-y", "mcp-remote@0.1.38", "http://localhost:8050/sse"]
     }
