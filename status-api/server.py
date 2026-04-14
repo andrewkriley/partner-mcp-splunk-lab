@@ -27,7 +27,7 @@ CORE_CONTAINERS = ["splunk", "splunk-mcp", "lab-guide", "status-api", "chat"]
 HTTP_CHECKS = [
     {"name": "Splunk Web", "url": "http://splunk:8000/en-US/account/login", "stream": False},
     {"name": "Splunk MCP", "url": "http://splunk-mcp:8050/sse",             "stream": True},
-    {"name": "Ask Splunk", "url": "http://chat:3000/api/health",             "stream": False},
+    {"name": "Ask Splunk", "url": "http://lab-guide:80/ask/api/health",      "stream": False},
 ]
 
 OTEL_CHECKS = [

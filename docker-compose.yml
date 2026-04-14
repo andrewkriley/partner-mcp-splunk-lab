@@ -67,12 +67,13 @@ services:
     image: nginx:alpine
     container_name: lab-guide
     ports:
-      - "127.0.0.1:${LAB_GUIDE_PORT:-3131}:80"   # Lab guide — localhost only
+      - "127.0.0.1:${LAB_GUIDE_PORT:-3131}:80"   # Lab guide + Ask Splunk UI — localhost only
     volumes:
       - ./lab-guide:/usr/share/nginx/html:ro
       - ./lab-guide/nginx.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
       - status-api
+      - chat
     deploy:
       resources:
         limits:
@@ -100,8 +101,8 @@ services:
     environment:
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       MCP_SSE_URL: http://splunk-mcp:8050/sse
-    ports:
-      - "127.0.0.1:${CHAT_PORT:-3132}:3000"   # Chat UI — localhost only
+    expose:
+      - "3000"   # internal only — lab-guide nginx proxies /ask/api/* here
     depends_on:
       - splunk-mcp
     restart: unless-stopped

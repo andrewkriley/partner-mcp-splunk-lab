@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ask Splunk — Buttercup Games Lab</title>
+<style>
+  :root {
+    --bg: #0f1117; --surface: #1a1d27; --surface2: #252833; --border: #2e3140;
+    --text: #e4e6eb; --text-dim: #8b8fa3; --accent: #7c5cfc; --accent-hover: #9478ff;
+    --user-bg: #2a2540; --assistant-bg: #1e2230;
+    --tool-bg: #1c2418; --tool-border: #2d3a25; --green: #4ade80; --red: #f87171; --yellow: #fbbf24;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --mono: "SF Mono", "Fira Code", "Cascadia Code", monospace;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:var(--font); background:var(--bg); color:var(--text); height:100vh; display:flex; flex-direction:column; }
+
+  header { padding:12px 24px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:12px; background:var(--surface); }
+  header h1 { font-size:18px; font-weight:600; }
+  header .badge { font-size:11px; padding:3px 8px; border-radius:12px; background:var(--surface2); color:var(--text-dim); }
+  header .status { margin-left:auto; font-size:12px; display:flex; align-items:center; gap:6px; }
+  header .dot { width:8px; height:8px; border-radius:50%; }
+  header .dot.ok { background:var(--green); } header .dot.err { background:var(--red); } header .dot.warn { background:var(--yellow); }
+
+  /* Tabs */
+  .tabs { display:flex; border-bottom:1px solid var(--border); background:var(--surface); padding:0 24px; }
+  .tab { padding:10px 20px; font-size:13px; font-weight:500; cursor:pointer; color:var(--text-dim); border-bottom:2px solid transparent; transition:0.15s; }
+  .tab:hover { color:var(--text); }
+  .tab.active { color:var(--accent); border-bottom-color:var(--accent); }
+  .tab .lock { font-size:10px; margin-left:4px; opacity:0.6; }
+
+  .tab-content { display:none; flex:1; overflow:hidden; flex-direction:column; }
+  .tab-content.active { display:flex; }
+
+  /* ── Explore Tools ── */
+  #explore { padding:0; overflow:hidden; }
+  .explore-layout { display:flex; flex:1; overflow:hidden; }
+  .tool-list { width:240px; border-right:1px solid var(--border); overflow-y:auto; padding:12px; flex-shrink:0; }
+  .tool-item { padding:10px 12px; border-radius:8px; cursor:pointer; margin-bottom:4px; font-size:13px; transition:0.15s; }
+  .tool-item:hover { background:var(--surface2); }
+  .tool-item.active { background:var(--accent); color:#fff; }
+  .tool-item .tool-desc { font-size:11px; color:var(--text-dim); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .tool-item.active .tool-desc { color:rgba(255,255,255,0.7); }
+
+  .tool-panel { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+  .tool-form { padding:20px 24px; overflow-y:auto; flex:1; }
+  .tool-form h2 { font-size:16px; margin-bottom:4px; }
+  .tool-form .desc { font-size:13px; color:var(--text-dim); margin-bottom:16px; }
+  .field-group { margin-bottom:12px; }
+  .field-group label { display:block; font-size:12px; font-weight:500; margin-bottom:4px; color:var(--text-dim); }
+  .field-group input, .field-group textarea {
+    width:100%; background:var(--surface2); border:1px solid var(--border); color:var(--text);
+    padding:8px 12px; border-radius:8px; font-family:var(--mono); font-size:13px; outline:none;
+  }
+  .field-group input:focus, .field-group textarea:focus { border-color:var(--accent); }
+  .field-group .hint { font-size:11px; color:var(--text-dim); margin-top:2px; }
+
+  .run-bar {
+    padding:12px 24px; border-top:1px solid var(--border); background:var(--surface);
+    display:flex; align-items:center; gap:12px; flex-shrink:0;
+  }
+  .run-btn {
+    background:var(--accent); color:#fff; border:none; padding:10px 24px; border-radius:8px;
+    cursor:pointer; font-size:14px; font-weight:500; transition:0.15s;
+  }
+  .run-btn:hover { background:var(--accent-hover); }
+  .run-btn:disabled { opacity:0.4; cursor:not-allowed; }
+  .run-bar .latency-display { font-size:12px; color:var(--green); font-family:var(--mono); }
+
+  .tool-result { overflow-y:auto; padding:20px 24px; flex:1; display:none; border-top:1px solid var(--border); }
+  .result-header { font-size:12px; color:var(--text-dim); margin-bottom:8px; display:flex; align-items:center; gap:8px; }
+  .result-header .latency { color:var(--green); }
+  .result-pre {
+    background:var(--surface2); padding:16px; border-radius:8px; font-family:var(--mono);
+    font-size:13px; white-space:pre-wrap; word-break:break-word; line-height:1.5; overflow-x:auto;
+  }
+
+  .empty-state { flex:1; display:flex; align-items:center; justify-content:center; color:var(--text-dim); font-size:14px; text-align:center; padding:32px; }
+
+  /* Quick queries */
+  .quick-queries { margin-bottom:12px; }
+  .quick-queries .label { font-size:11px; color:var(--text-dim); margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px; }
+  .qq-list { display:flex; gap:6px; flex-wrap:wrap; }
+  .qq {
+    background:var(--surface2); border:1px solid var(--border); color:var(--text); padding:5px 10px;
+    border-radius:14px; cursor:pointer; font-size:12px; font-family:var(--mono); transition:0.15s;
+  }
+  .qq:hover { border-color:var(--accent); color:var(--accent); }
+
+  /* ── Chat ── */
+  #chat-area { flex:1; overflow-y:auto; padding:24px; display:flex; flex-direction:column; gap:16px; }
+  .msg { max-width:720px; line-height:1.6; }
+  .msg.user { align-self:flex-end; background:var(--user-bg); padding:12px 16px; border-radius:16px 16px 4px 16px; }
+  .msg.assistant { align-self:flex-start; background:var(--assistant-bg); padding:12px 16px; border-radius:16px 16px 16px 4px; }
+  .msg.assistant pre { background:var(--surface2); padding:10px 14px; border-radius:8px; overflow-x:auto; margin:8px 0; font-family:var(--mono); font-size:13px; }
+  .msg.assistant code { font-family:var(--mono); font-size:13px; background:var(--surface2); padding:2px 5px; border-radius:4px; }
+  .msg.assistant pre code { background:none; padding:0; }
+  .tool-card { align-self:flex-start; background:var(--tool-bg); border:1px solid var(--tool-border); border-radius:8px; padding:10px 14px; font-size:13px; max-width:720px; width:100%; }
+  .tool-card summary { cursor:pointer; color:var(--green); font-family:var(--mono); font-weight:500; }
+  .tool-card pre { margin-top:8px; font-size:12px; white-space:pre-wrap; word-break:break-word; color:var(--text-dim); max-height:200px; overflow-y:auto; }
+
+  #starters { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; padding:16px 24px; }
+  .starter { background:var(--surface2); border:1px solid var(--border); color:var(--text); padding:8px 14px; border-radius:20px; cursor:pointer; font-size:13px; transition:0.15s; }
+  .starter:hover { border-color:var(--accent); color:var(--accent); }
+
+  #input-bar { padding:16px 24px; border-top:1px solid var(--border); background:var(--surface); display:flex; gap:10px; align-items:flex-end; }
+  #input-bar textarea {
+    flex:1; resize:none; background:var(--surface2); border:1px solid var(--border); color:var(--text);
+    padding:10px 14px; border-radius:12px; font-family:var(--font); font-size:14px; line-height:1.5;
+    outline:none; min-height:44px; max-height:120px;
+  }
+  #input-bar textarea:focus { border-color:var(--accent); }
+  #input-bar textarea::placeholder { color:var(--text-dim); }
+  #send-btn {
+    background:var(--accent); color:#fff; border:none; width:44px; height:44px; border-radius:12px;
+    cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; transition:0.15s; flex-shrink:0;
+  }
+  #send-btn:hover { background:var(--accent-hover); }
+  #send-btn:disabled { opacity:0.4; cursor:not-allowed; }
+
+  .no-key-msg { padding:24px; text-align:center; color:var(--text-dim); }
+  .no-key-msg code { background:var(--surface2); padding:2px 6px; border-radius:4px; font-family:var(--mono); }
+  .typing { align-self:flex-start; padding:12px 16px; color:var(--text-dim); font-style:italic; font-size:14px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🔍 Ask Splunk</h1>
+  <span class="badge" id="model-badge"></span>
+  <div class="status">
+    <span class="dot" id="status-dot"></span>
+    <span id="status-text">Connecting…</span>
+  </div>
+</header>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('explore')">Explore Tools</div>
+  <div class="tab" onclick="switchTab('chat')">Chat <span class="lock" id="chat-lock">🔒</span></div>
+</div>
+
+<!-- ═══ Explore Tools Tab ═══ -->
+<div class="tab-content active" id="explore">
+  <div class="explore-layout">
+    <div class="tool-list" id="tool-list">
+      <div style="color:var(--text-dim);font-size:13px;padding:8px;">Loading tools…</div>
+    </div>
+    <div class="tool-panel">
+      <div id="tool-form-area">
+        <div class="empty-state" id="explore-empty">Select a tool from the list to get started.</div>
+      </div>
+      <div class="run-bar" id="run-bar" style="display:none">
+        <button class="run-btn" id="run-btn" onclick="runTool()">▶ Run</button>
+        <span class="latency-display" id="run-latency"></span>
+      </div>
+      <div class="tool-result" id="tool-result"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ Chat Tab ═══ -->
+<div class="tab-content" id="chat-tab">
+  <div id="no-key-banner" class="no-key-msg" style="display:none">
+    <p>💬 Chat requires an Anthropic API key. Add <code>ANTHROPIC_API_KEY</code> to your <code>.env</code> and restart.</p>
+    <p style="margin-top:8px;font-size:13px;">The <strong>Explore Tools</strong> tab works without any API key.</p>
+  </div>
+  <div id="chat-area"></div>
+  <div id="starters">
+    <button class="starter" onclick="sendChat('What indexes are available?')">What indexes are available?</button>
+    <button class="starter" onclick="sendChat('Show me the top 5 vendors by revenue')">Top vendors by revenue</button>
+    <button class="starter" onclick="sendChat('How many HTTP 500 errors are in the access logs?')">HTTP 500 error count</button>
+  </div>
+  <div id="input-bar">
+    <textarea id="chat-input" placeholder="Ask a question about the Buttercup Games data…" rows="1"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatInput()}"></textarea>
+    <button id="send-btn" onclick="sendChatInput()" title="Send">➤</button>
+  </div>
+</div>
+
+<script>
+/* ── State ── */
+let tools = [];
+let selectedTool = null;
+let chatHistory = [];
+let chatBusy = false;
+let hasApiKey = false;
+
+/* ── Tabs ── */
+function switchTab(id) {
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', (i===0 && id==='explore') || (i===1 && id==='chat')));
+  document.getElementById('explore').classList.toggle('active', id==='explore');
+  document.getElementById('chat-tab').classList.toggle('active', id==='chat');
+}
+
+/* ── Health check ── */
+async function checkHealth() {
+  try {
+    const r = await fetch('/ask/api/health');
+    const d = await r.json();
+    hasApiKey = d.anthropic_api_key_set;
+    document.getElementById('model-badge').textContent = d.model||'';
+    document.getElementById('chat-lock').style.display = hasApiKey ? 'none' : 'inline';
+    document.getElementById('no-key-banner').style.display = hasApiKey ? 'none' : 'block';
+    if (d.mcp_tools_loaded) { statusDot('ok', d.mcp_tool_count+' tools'); }
+    else { statusDot('warn','MCP unavailable'); }
+    if (!hasApiKey) {
+      document.getElementById('starters').style.display = 'none';
+      document.getElementById('input-bar').style.display = 'none';
+    }
+  } catch { statusDot('err','Offline'); }
+}
+function statusDot(cls,txt) {
+  document.getElementById('status-dot').className='dot '+cls;
+  document.getElementById('status-text').textContent=txt;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   EXPLORE TOOLS
+   ══════════════════════════════════════════════════════════════════════════ */
+
+const QUICK_QUERIES = [
+  { label: 'Count all sales', tool: 'search_oneshot', args: { query: 'index=buttercup earliest=0 latest=now sourcetype=buttercup_sales | stats count', earliest_time: '0', latest_time: 'now' }},
+  { label: 'Revenue by vendor', tool: 'search_oneshot', args: { query: 'index=buttercup earliest=0 latest=now sourcetype=buttercup_sales | stats sum(revenue) as total_revenue by vendor | sort -total_revenue', earliest_time: '0', latest_time: 'now' }},
+  { label: 'HTTP status codes', tool: 'search_oneshot', args: { query: 'index=buttercup earliest=0 latest=now sourcetype=buttercup_web | stats count by status', earliest_time: '0', latest_time: 'now' }},
+  { label: 'Product catalogue', tool: 'search_oneshot', args: { query: 'index=buttercup earliest=0 latest=now sourcetype=buttercup_products | table product category price', earliest_time: '0', latest_time: 'now' }},
+  { label: 'Validate SPL', tool: 'validate_spl', args: { query: 'index=buttercup earliest=0 latest=now | stats count by sourcetype' }},
+];
+
+async function loadTools() {
+  try {
+    const r = await fetch('/ask/api/tools');
+    const d = await r.json();
+    tools = d.tools || [];
+    renderToolList();
+    if (tools.length) selectTool(tools[0].name);
+  } catch(e) {
+    document.getElementById('tool-list').innerHTML = '<div style="color:var(--red);padding:8px;font-size:13px;">Failed to load tools</div>';
+  }
+}
+
+function renderToolList() {
+  const el = document.getElementById('tool-list');
+  el.innerHTML = tools.map(t =>
+    `<div class="tool-item" data-name="${t.name}" onclick="selectTool('${t.name}')">
+      <div><strong>${t.name}</strong></div>
+      <div class="tool-desc">${esc(t.description)}</div>
+    </div>`
+  ).join('');
+}
+
+function selectTool(name) {
+  selectedTool = tools.find(t => t.name === name);
+  if (!selectedTool) return;
+  document.querySelectorAll('.tool-item').forEach(el => el.classList.toggle('active', el.dataset.name === name));
+  renderToolForm();
+  document.getElementById('run-bar').style.display = 'flex';
+  document.getElementById('run-latency').textContent = '';
+  document.getElementById('tool-result').style.display = 'none';
+}
+
+function renderToolForm() {
+  const t = selectedTool;
+  const schema = t.input_schema || {};
+  const props = schema.properties || {};
+  const required = new Set(schema.required || []);
+
+  let fieldsHtml = '';
+  for (const [key, prop] of Object.entries(props)) {
+    const req = required.has(key);
+    const def = prop.default !== undefined ? prop.default : '';
+    const desc = prop.description || '';
+    const isLong = key === 'query';
+    if (isLong) {
+      fieldsHtml += `<div class="field-group">
+        <label>${key}${req?' *':''}</label>
+        <textarea id="field-${key}" rows="3" placeholder="${esc(desc)}">${esc(String(def))}</textarea>
+        ${desc?'<div class="hint">'+esc(desc)+'</div>':''}
+      </div>`;
+    } else {
+      fieldsHtml += `<div class="field-group">
+        <label>${key}${req?' *':''}</label>
+        <input id="field-${key}" value="${esc(String(def))}" placeholder="${esc(desc)}">
+        ${desc?'<div class="hint">'+esc(desc)+'</div>':''}
+      </div>`;
+    }
+  }
+
+  const hasQuick = QUICK_QUERIES.some(q => q.tool === t.name);
+  const qqHtml = hasQuick ? `<div class="quick-queries">
+    <div class="label">Quick queries</div>
+    <div class="qq-list">${QUICK_QUERIES.filter(q=>q.tool===t.name).map((q,i)=>`<span class="qq" onclick="fillQuick(${i})">${q.label}</span>`).join('')}</div>
+  </div>` : '';
+
+  document.getElementById('tool-form-area').innerHTML = `
+    <div class="tool-form">
+      <h2>${t.name}</h2>
+      <div class="desc">${esc(t.description)}</div>
+      ${qqHtml}
+      ${fieldsHtml || '<div style="color:var(--text-dim);font-size:13px;">This tool takes no arguments.</div>'}
+    </div>`;
+  document.getElementById('explore-empty')?.remove();
+}
+
+function fillQuick(idx) {
+  const q = QUICK_QUERIES[idx];
+  selectTool(q.tool);
+  setTimeout(() => {
+    for (const [k,v] of Object.entries(q.args)) {
+      const el = document.getElementById('field-'+k);
+      if (el) el.value = String(v);
+    }
+  }, 50);
+}
+
+async function runTool() {
+  if (!selectedTool) return;
+  const btn = document.getElementById('run-btn');
+  btn.disabled = true; btn.textContent = '⏳ Running…';
+
+  const schema = selectedTool.input_schema || {};
+  const props = schema.properties || {};
+  const args = {};
+  for (const key of Object.keys(props)) {
+    const el = document.getElementById('field-'+key);
+    if (el && el.value.trim()) {
+      const type = props[key].type;
+      if (type === 'number') args[key] = Number(el.value);
+      else if (type === 'boolean') args[key] = el.value === 'true';
+      else args[key] = el.value;
+    }
+  }
+
+  const resultEl = document.getElementById('tool-result');
+  const latencyEl = document.getElementById('run-latency');
+  resultEl.style.display = 'block';
+  resultEl.innerHTML = '<div style="color:var(--text-dim);font-size:13px;">Running…</div>';
+  latencyEl.textContent = '';
+  const t0 = performance.now();
+
+  try {
+    const r = await fetch('/ask/api/tools/call', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({name: selectedTool.name, arguments: args}),
+    });
+    const d = await r.json();
+    const ms = Math.round(performance.now() - t0);
+    latencyEl.textContent = ms + 'ms';
+    if (d.error) {
+      latencyEl.style.color = 'var(--red)';
+      resultEl.innerHTML = `<pre class="result-pre" style="color:var(--red)">${esc(JSON.stringify(d, null, 2))}</pre>`;
+    } else {
+      latencyEl.style.color = 'var(--green)';
+      const pretty = typeof d.result === 'string' ? d.result : JSON.stringify(d.result, null, 2);
+      resultEl.innerHTML = `<pre class="result-pre">${esc(pretty)}</pre>`;
+    }
+  } catch(e) {
+    latencyEl.textContent = 'error';
+    latencyEl.style.color = 'var(--red)';
+    resultEl.innerHTML = `<pre class="result-pre" style="color:var(--red)">${esc(e.message)}</pre>`;
+  }
+
+  btn.disabled = false; btn.textContent = '▶ Run';
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   CHAT
+   ══════════════════════════════════════════════════════════════════════════ */
+
+function addMsg(role, content) {
+  const d = document.createElement('div'); d.className='msg '+role;
+  d.innerHTML = role==='assistant' ? renderMd(content) : esc(content);
+  document.getElementById('chat-area').appendChild(d);
+  document.getElementById('chat-area').scrollTop = 999999;
+}
+function addToolCard(tc) {
+  const d = document.createElement('details'); d.className='tool-card';
+  d.innerHTML = `<summary>🔧 ${tc.tool}(${Object.keys(tc.input).map(k=>k+'=…').join(', ')})</summary><pre>${esc(tc.output)}</pre>`;
+  document.getElementById('chat-area').appendChild(d);
+}
+function addTyping() {
+  const d=document.createElement('div'); d.className='typing'; d.id='typing'; d.textContent='Thinking…';
+  document.getElementById('chat-area').appendChild(d);
+  document.getElementById('chat-area').scrollTop=999999;
+}
+function removeTyping() { document.getElementById('typing')?.remove(); }
+
+async function sendChat(text) {
+  if (chatBusy || !text.trim()) return;
+  chatBusy = true; document.getElementById('send-btn').disabled = true;
+  document.getElementById('chat-input').value = '';
+  document.getElementById('starters').style.display = 'none';
+  addMsg('user', text);
+  chatHistory.push({role:'user', content:text});
+  addTyping();
+  try {
+    const r = await fetch('/ask/api/chat', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({message:text, history:chatHistory.slice(0,-1)}),
+    });
+    removeTyping();
+    const d = await r.json();
+    if (d.error) { addMsg('assistant', '⚠️ '+d.error+': '+(d.message||'')); }
+    else {
+      if (d.tool_calls) d.tool_calls.forEach(addToolCard);
+      addMsg('assistant', d.response);
+      chatHistory.push({role:'assistant', content:d.response});
+    }
+  } catch(e) { removeTyping(); addMsg('assistant','⚠️ Network error: '+e.message); }
+  chatBusy = false; document.getElementById('send-btn').disabled = false;
+  document.getElementById('chat-input').focus();
+}
+function sendChatInput() { sendChat(document.getElementById('chat-input').value); }
+
+/* ── Helpers ── */
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function renderMd(t) {
+  let h=esc(t);
+  h=h.replace(/```(\w*)\n([\s\S]*?)```/g,'<pre><code>$2</code></pre>');
+  h=h.replace(/`([^`]+)`/g,'<code>$1</code>');
+  h=h.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
+  h=h.replace(/\n/g,'<br>');
+  return h;
+}
+
+document.getElementById('chat-input').addEventListener('input', function() {
+  this.style.height='auto'; this.style.height=Math.min(this.scrollHeight,120)+'px';
+});
+
+/* ── Init ── */
+checkHealth();
+loadTools();
+</script>
+</body>
+</html>

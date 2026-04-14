@@ -394,6 +394,23 @@
             background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25);
             color: #ef4444;
         }
+
+        /* Ask Splunk — embedded tool (full-width panel like Status) */
+        .ask-splunk-frame-wrap {
+            margin: 8px -48px -40px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            background: var(--bg-tertiary);
+            min-height: calc(100vh - 200px);
+        }
+        .ask-splunk-frame {
+            display: block;
+            width: 100%;
+            height: calc(100vh - 200px);
+            min-height: 520px;
+            border: none;
+        }
     </style>
 </head>
 <body>
@@ -425,7 +442,7 @@
 
         <hr class="sidebar-hr">
         <div class="sidebar-label">Lab Tools</div>
-        <div class="step-item" id="ask-splunk-link" onclick="window.open('http://localhost:3132','_blank')">
+        <div class="step-item" id="ask-splunk-nav" data-step="5" onclick="goTo(5)">
             <div class="tool-icon">💬</div>
             <div class="step-label">Ask Splunk</div>
         </div>
@@ -754,6 +771,19 @@ cd splunk-lab</code>
             </div>
         </div>
 
+        <!-- ── Ask Splunk (embedded) ───────────────────────────────────── -->
+        <div class="step-page" id="step-5">
+            <div class="status-page-header">
+                <div>
+                    <h1>Ask Splunk</h1>
+                    <p class="intro" style="margin-bottom:0">Run MCP tools against your lab Splunk from the browser — same stack as this guide. <strong>Explore Tools</strong> needs no API key; <strong>Chat</strong> needs <code>ANTHROPIC_API_KEY</code> in <code>.env</code>.</p>
+                </div>
+            </div>
+            <div class="ask-splunk-frame-wrap">
+                <iframe class="ask-splunk-frame" title="Ask Splunk" src="/ask/"></iframe>
+            </div>
+        </div>
+
         <!-- ── Documentation ─────────────────────────────────────────────── -->
         <div class="step-page" id="step-4">
             <h1>Documentation</h1>
@@ -761,7 +791,7 @@ cd splunk-lab</code>
 
             <!-- ── Architecture ── -->
             <h2>Architecture</h2>
-            <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">Five Docker Compose services connected on an internal bridge network. All host ports are bound to <code>127.0.0.1</code> — accessible from your machine only.</p>
+            <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">Four public-facing Docker Compose services on the host (Splunk, MCP, lab guide, status sidecar). The Ask Splunk backend runs internally and is reached through the lab guide. All host ports are bound to <code>127.0.0.1</code> — accessible from your machine only.</p>
 
             <div class="card">
                 <table>
@@ -782,16 +812,16 @@ cd splunk-lab</code>
                             <td>MCP server (SSE). Bridges Claude / Ask Splunk to Splunk search, indexes, and saved searches.</td>
                         </tr>
                         <tr>
-                            <td><strong>chat</strong></td>
-                            <td><code>chat/Dockerfile</code></td>
-                            <td><code>${CHAT_PORT}</code></td>
-                            <td>Ask Splunk — MCP Tool Explorer (no API key) + Chat (optional Anthropic key).</td>
-                        </tr>
-                        <tr>
                             <td><strong>lab-guide</strong></td>
                             <td><code>nginx:alpine</code></td>
                             <td><code>${LAB_GUIDE_PORT}</code></td>
-                            <td>This page. Static HTML served by nginx, proxies <code>/api/status</code> to status-api.</td>
+                            <td>This guide — static HTML plus nginx proxies: <code>/api/status</code> → status-api, <code>/ask/api/*</code> → Ask Splunk backend (FastAPI on <code>chat:3000</code>, internal only).</td>
+                        </tr>
+                        <tr>
+                            <td><strong>chat</strong></td>
+                            <td><code>chat/Dockerfile</code></td>
+                            <td><em>(internal)</em></td>
+                            <td>Ask Splunk FastAPI — MCP Tool Explorer + optional Chat. Not exposed on the host; use <strong>Lab Tools → Ask Splunk</strong> here or open <code>/ask/</code> under the lab guide URL.</td>
                         </tr>
                         <tr>
                             <td><strong>status-api</strong></td>
@@ -804,13 +834,9 @@ cd splunk-lab</code>
             </div>
 
             <h3>Data flow</h3>
-            <div class="card" style="padding:20px;font-size:13px;font-family:'SF Mono',monospace;line-height:2;color:var(--text-secondary);overflow-x:auto;white-space:pre;">User ──▶ Ask Splunk (chat) ──▶ Anthropic API
-              │                              │ tool_use
-              │                              ▼
-              │                     MCP Server (:8050)
-              │                              │ SSE
-              │                              ▼
-              └──────────────────▶ Splunk Enterprise (:8089)
+            <div class="card" style="padding:20px;font-size:13px;font-family:'SF Mono',monospace;line-height:2;color:var(--text-secondary);overflow-x:auto;white-space:pre;">Browser ──▶ Lab guide (/ask/) ──▶ Ask Splunk API (chat) ──▶ MCP (:8050) ──▶ Splunk (:8089)
+              │                                    │
+              │                                    └──▶ Anthropic API (Chat tab only, when API key set)
                                          │
                     ┌────────────────────┼────────────────────┐
                     ▼                    ▼                    ▼
@@ -869,12 +895,7 @@ cd splunk-lab</code>
                         <tr>
                             <td><code>LAB_GUIDE_PORT</code></td>
                             <td><code>3131</code></td>
-                            <td>Host port for this lab guide.</td>
-                        </tr>
-                        <tr>
-                            <td><code>CHAT_PORT</code></td>
-                            <td><code>3132</code></td>
-                            <td>Host port for Ask Splunk.</td>
+                            <td>Host port for this lab guide (includes Ask Splunk at <code>/ask/</code>).</td>
                         </tr>
                         <tr>
                             <td><code>ANTHROPIC_API_KEY</code></td>
@@ -964,7 +985,7 @@ cd splunk-lab</code>
     const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
     if (!isLocal) {
         document.querySelector('.step-item[data-step="3"]')?.remove();
-        document.getElementById('ask-splunk-link')?.remove();
+        document.getElementById('ask-splunk-nav')?.remove();
     }
 
     function goTo(n) {

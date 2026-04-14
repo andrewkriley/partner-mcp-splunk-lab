@@ -14,7 +14,7 @@ docker compose up  →  Lab guide + Splunk Web UI + MCP server + Ask Splunk read
 
 ## Lab Guide
 
-The lab guide at `http://localhost:3131` is the single interface for the lab. It includes guided setup steps, SPL exercises, a live status dashboard, and documentation — all in one place.
+The lab guide at `http://localhost:3131` is the single interface for the lab. It includes guided setup steps, SPL exercises, **Ask Splunk** (MCP tool explorer and optional chat at `/ask/`), a live status dashboard, and documentation — all in one place.
 
 ### Lab Steps
 
@@ -168,7 +168,7 @@ index=main sourcetype=my_sourcetype
 
 ## Ask Splunk
 
-A two-tab interface at `http://localhost:3132` for exploring and querying Splunk through MCP:
+A two-tab interface **inside the lab guide** at `http://localhost:3131/ask/` (sidebar **Lab Tools → Ask Splunk**) for exploring and querying Splunk through MCP. The FastAPI backend runs in the `chat` container on the internal network only; nginx on the lab guide proxies `/ask/api/*` to it so you use one host port.
 
 ### Explore Tools (no API key required)
 
@@ -184,7 +184,7 @@ A natural-language chat interface that bridges Claude with Splunk via MCP tools.
 ANTHROPIC_API_KEY=sk-ant-...
 ```
 
-Then restart: `docker compose up -d`. Open http://localhost:3132 and switch to the **Chat** tab.
+Then restart: `docker compose up -d`. Open `http://localhost:3131/ask/` and switch to the **Chat** tab.
 
 > The Chat tab requires an Anthropic API key. The Explore Tools tab works without one. All other lab features are unaffected.
 
@@ -261,8 +261,7 @@ All ports are bound to `127.0.0.1` and are only accessible from this machine.
 
 | Port | Service | Configurable via |
 |---|---|---|
-| `3131` | Lab Guide | `LAB_GUIDE_PORT` |
-| `3132` | Ask Splunk Chat UI | `CHAT_PORT` |
+| `3131` | Lab Guide (includes Ask Splunk at `/ask/`) | `LAB_GUIDE_PORT` |
 | `8000` | Splunk Web UI | — |
 | `8050` | Splunk MCP Server (SSE) | — |
 | `8088` | HTTP Event Collector (HEC) | — |

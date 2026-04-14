@@ -46,11 +46,11 @@ Five services run in Docker Compose:
 
 - **splunk-mcp** (built from `mcp/Dockerfile`) — Official Splunk MCP server (`splunk-mcp-server` npm package). Runs in SSE mode on `127.0.0.1:8050`. Connects to Splunk via internal Docker networking on `splunk:8089`. No MCP endpoint auth — localhost-only by design.
 
-- **lab-guide** (`nginx:alpine`) — Static lab guide served at `127.0.0.1:${LAB_GUIDE_PORT}` (default `3131`). Mounts `lab-guide/` as the web root and `lab-guide/nginx.conf` as the nginx config. Proxies `/api/status` to `status-api:8081` so the status dashboard can poll from the browser without a separate port.
+- **lab-guide** (`nginx:alpine`) — Lab guide served at `127.0.0.1:${LAB_GUIDE_PORT}` (default `3131`). Mounts `lab-guide/` as the web root and `lab-guide/nginx.conf` as the nginx config. Proxies `/api/status` to `status-api:8081` and `/ask/api/*` to `chat:3000/api/*` so Ask Splunk shares the same origin as the guide (embedded at `/ask/`).
 
 - **status-api** (built from `status-api/Dockerfile`) — Python sidecar that exposes `GET /api/status` on port 8081 (internal only). Uses the Docker SDK via a read-only `docker.sock` mount to check container states and probes Splunk Web and MCP HTTP endpoints for service health.
 
-- **chat** (built from `chat/Dockerfile`) — "Ask Splunk" chat UI served at `127.0.0.1:${CHAT_PORT}` (default `3132`). FastAPI backend bridges the Anthropic Messages API with the MCP server — Claude uses MCP tools to query Splunk and returns natural-language answers. Requires `ANTHROPIC_API_KEY` in `.env`. Gracefully degrades without it.
+- **chat** (built from `chat/Dockerfile`) — Ask Splunk FastAPI backend (internal port 3000 only). Bridges the Anthropic Messages API with the MCP server for the Chat tab; Explore Tools uses MCP only. Requires `ANTHROPIC_API_KEY` in `.env` for Chat. Gracefully degrades without it. The browser loads the UI from `lab-guide/ask/index.html` (static) under `/ask/`; API calls go to `/ask/api/*`.
 
 ## Buttercup app
 

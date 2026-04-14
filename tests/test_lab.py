@@ -179,6 +179,14 @@ class TestLabGuide:
         assert resp.status_code == 200
         assert "text/html" in resp.headers.get("Content-Type", "")
 
+    def test_ask_splunk_page_served_under_lab_guide(self):
+        """Ask Splunk static UI should be available at /ask/ (same stack as lab guide)."""
+        base = LAB_GUIDE_URL.rstrip("/")
+        resp = requests.get(f"{base}/ask/", timeout=10)
+        assert resp.status_code == 200
+        assert "text/html" in resp.headers.get("Content-Type", "")
+        assert "Ask Splunk" in resp.text
+
 
 # ── MCP server ─────────────────────────────────────────────────────────────
 
