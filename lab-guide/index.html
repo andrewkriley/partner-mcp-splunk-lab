@@ -135,7 +135,7 @@
         a:hover { text-decoration: underline; }
 
         /* ── Prereq grid ───────────────────────────────────────────────────── */
-        .prereq-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 28px; }
+        .prereq-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 28px; }
         .prereq-card {
             background: var(--bg-card); border: 1px solid var(--border);
             border-radius: 8px; padding: 16px;
@@ -215,6 +215,12 @@
         }
         .notice a { color: #58a6ff; text-decoration: none; }
         .notice a:hover { text-decoration: underline; }
+
+        .notice-security {
+            background: rgba(245,158,11,0.08);
+            border-color: rgba(245,158,11,0.28);
+            color: var(--text-primary);
+        }
 
         /* ── Alert ─────────────────────────────────────────────────────────── */
         .alert {
@@ -465,10 +471,17 @@
                     </div>
                 </div>
                 <div class="prereq-card">
+                    <div class="prereq-icon">📦</div>
+                    <div>
+                        <div class="prereq-title">Node.js</div>
+                        <div class="prereq-desc">Required on the host for <code>npx</code> when connecting Claude to MCP (Step 3).</div>
+                    </div>
+                </div>
+                <div class="prereq-card">
                     <div class="prereq-icon">🤖</div>
                     <div>
                         <div class="prereq-title">Claude Code or Claude Desktop</div>
-                        <div class="prereq-desc">Needed for the MCP integration in Step 3.</div>
+                        <div class="prereq-desc">For AI-driven MCP from your editor or desktop app. Optional if you only use Ask Splunk in the browser.</div>
                     </div>
                 </div>
             </div>
@@ -623,11 +636,11 @@ cd splunk-lab</code>
         <div class="step-page" id="step-2">
             <div class="step-badge">Step 3</div>
             <h1>Connect to MCP</h1>
-            <div class="notice">
-                <span>ℹ️</span>
-                <span>MCP client support is evolving. See <a href="https://github.com/andrewkriley/splunk-lab/issues/17" target="_blank" rel="noopener">issue #17</a> for known limitations and planned client additions.</span>
+            <div class="notice notice-security">
+                <span>🔒</span>
+                <span>The MCP server has <strong>no authentication</strong> and listens on <code>127.0.0.1:8050</code> only — fine for this local lab, but do not expose that port to untrusted networks.</span>
             </div>
-            <p class="intro">The Splunk MCP server runs alongside Splunk and gives Claude direct access to search, dashboards, and alerts via the Model Context Protocol. Choose your client below.</p>
+            <p class="intro">The Splunk MCP server runs alongside Splunk and exposes tools for search, dashboards, and alerts over the Model Context Protocol. Use <strong>Ask Splunk</strong> in the sidebar for a browser UI, or connect <strong>Claude Code</strong> / <strong>Claude Desktop</strong> using the tabs below.</p>
 
             <div class="tabs">
                 <div class="tab active" onclick="switchTab(this,'pane-code')">Claude Code</div>
@@ -687,7 +700,7 @@ cd splunk-lab</code>
 }</code>
                 </div>
                 <p>Restart Claude Desktop — the Splunk tools will appear in the tool list whenever the lab stack is running.</p>
-                <p class="note">Requires <strong>Node.js</strong> on the host for <code>npx</code>.</p>
+                <p class="note">Requires <strong>Node.js</strong> on the host for <code>npx</code>. Claude Desktop expects HTTPS for direct SSE to remote URLs; this lab uses plain HTTP on localhost, so <code>mcp-remote</code> proxies over stdio the same way as in Claude Code.</p>
                 <h2>Try these prompts</h2>
                 <div class="card">
                     <ul class="prompt-list">
