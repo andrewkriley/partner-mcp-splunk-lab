@@ -220,11 +220,11 @@ function statusDot(cls,txt) {
    ══════════════════════════════════════════════════════════════════════════ */
 
 const QUICK_QUERIES = [
-  { label: 'Count all sales', tool: 'search_oneshot', args: { query: 'index=buttercup sourcetype=buttercup_sales | stats count', earliest_time: '0', latest_time: 'now' }},
-  { label: 'Revenue by vendor', tool: 'search_oneshot', args: { query: 'index=buttercup sourcetype=buttercup_sales | stats sum(revenue) as total_revenue by vendor | sort -total_revenue', earliest_time: '0', latest_time: 'now' }},
-  { label: 'HTTP status codes', tool: 'search_oneshot', args: { query: 'index=buttercup sourcetype=buttercup_web | stats count by status', earliest_time: '0', latest_time: 'now' }},
-  { label: 'Product catalogue', tool: 'search_oneshot', args: { query: 'index=buttercup sourcetype=buttercup_products | table product category price', earliest_time: '0', latest_time: 'now' }},
-  { label: 'Validate SPL', tool: 'validate_spl', args: { query: 'index=buttercup | stats count by sourcetype' }},
+  { label: 'Count all sales', tool: 'search_oneshot', args: { query: 'index=buttercup earliest=0 latest=now sourcetype=buttercup_sales | stats count', earliest_time: '0', latest_time: 'now' }},
+  { label: 'Revenue by vendor', tool: 'search_oneshot', args: { query: 'index=buttercup earliest=0 latest=now sourcetype=buttercup_sales | stats sum(revenue) as total_revenue by vendor | sort -total_revenue', earliest_time: '0', latest_time: 'now' }},
+  { label: 'HTTP status codes', tool: 'search_oneshot', args: { query: 'index=buttercup earliest=0 latest=now sourcetype=buttercup_web | stats count by status', earliest_time: '0', latest_time: 'now' }},
+  { label: 'Product catalogue', tool: 'search_oneshot', args: { query: 'index=buttercup earliest=0 latest=now sourcetype=buttercup_products | table product category price', earliest_time: '0', latest_time: 'now' }},
+  { label: 'Validate SPL', tool: 'validate_spl', args: { query: 'index=buttercup earliest=0 latest=now | stats count by sourcetype' }},
 ];
 
 async function loadTools() {

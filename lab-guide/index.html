@@ -555,6 +555,10 @@ cd splunk-lab</code>
                             <span class="cred-label">Username</span><span class="cred-val">admin</span>
                             <span class="cred-label">Password</span><span class="cred-val">the value you set in .env</span>
                         </div>
+                        <div class="alert" style="margin-top:14px;">
+                            <span>ℹ️</span>
+                            <span>Before you run Buttercup searches in <strong>Search &amp; Reporting</strong>, set the time range to <strong>All time</strong> (sample data is dated January 2025; <strong>Last 24 hours</strong> usually shows no events). Step&nbsp;2 copies SPL that includes <code>earliest=0 latest=now</code> so results work regardless of the picker.</span>
+                        </div>
                     </div>
                 </li>
             </ol>
