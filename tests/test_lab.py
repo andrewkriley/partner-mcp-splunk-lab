@@ -127,16 +127,21 @@ class TestButtercupData:
         statuses = {r["status"] for r in results}
         assert statuses, "status field is empty on all buttercup_web events"
 
-    def test_web_status_field_extracted(self, buttercup_ready, splunk_session):
-        """Apache Combined log field extraction should populate the status field."""
-        results = run_search(
-            splunk_session,
-            "search index=buttercup sourcetype=buttercup_web | stats count by status | where status!=\"\"",
-        )
-        assert results, \
-            "No status values extracted from buttercup_web — check EXTRACT-apache in props.conf"
-        statuses = {r["status"] for r in results}
-        assert statuses, "status field is empty on all buttercup_web events"
+    @pytest.mark.parametrize(
+        "spl",
+        (
+            "search index=buttercup earliest=0 latest=now sourcetype=buttercup_web | stats count by status",
+            "search index=buttercup earliest=0 latest=now sourcetype=buttercup_sales | stats sum(revenue) as total_revenue by vendor | sort -total_revenue",
+            "search index=buttercup earliest=0 latest=now sourcetype=buttercup_sales | stats sum(units_sold) as total_units by product | sort -total_units",
+            "search index=buttercup earliest=0 latest=now sourcetype=buttercup_sales | timechart span=1d sum(revenue) by vendor",
+        ),
+    )
+    def test_readme_and_lab_guide_buttercup_spl(self, buttercup_ready, splunk_session, spl):
+        """README and lab-guide SPL (with all-time bounds) must return rows."""
+        results = run_search(splunk_session, spl)
+        assert results, f"Documented query returned no results: {spl}"
+        if "timechart" in spl:
+            assert len(results) > 1, "timechart should span multiple days of sample sales"
 
 
 # ── HTTP Event Collector ───────────────────────────────────────────────────

@@ -584,14 +584,14 @@ cd splunk-lab</code>
             </div>
 
             <h2>Try these searches</h2>
-            <p>Open <a href="http://localhost:8000/en-US/app/search/search" target="_blank">Search &amp; Reporting</a> in Splunk and run the queries below.</p>
+            <p>Open <a href="http://localhost:8000/en-US/app/search/search" target="_blank">Search &amp; Reporting</a> in Splunk and run the queries below. The sample data is from <strong>January 2025</strong>; Splunk&rsquo;s default time range is often &ldquo;last 24 hours,&rdquo; which would show no events. Each query includes <code>earliest=0 latest=now</code> so it matches all indexed data — or set the picker to <strong>All time</strong> and you can omit those terms.</p>
 
             <div class="search-card">
                 <div class="search-header">
                     <span class="search-title">Traffic by HTTP status code</span>
                     <button class="copy-btn" onclick="copySearch(this)">Copy</button>
                 </div>
-                <div class="search-spl">index=buttercup sourcetype=buttercup_web | stats count by status</div>
+                <div class="search-spl">index=buttercup earliest=0 latest=now sourcetype=buttercup_web | stats count by status</div>
             </div>
 
             <div class="search-card">
@@ -599,7 +599,7 @@ cd splunk-lab</code>
                     <span class="search-title">Sales revenue by vendor</span>
                     <button class="copy-btn" onclick="copySearch(this)">Copy</button>
                 </div>
-                <div class="search-spl">index=buttercup sourcetype=buttercup_sales | stats sum(revenue) as total_revenue by vendor | sort -total_revenue</div>
+                <div class="search-spl">index=buttercup earliest=0 latest=now sourcetype=buttercup_sales | stats sum(revenue) as total_revenue by vendor | sort -total_revenue</div>
             </div>
 
             <div class="search-card">
@@ -607,7 +607,7 @@ cd splunk-lab</code>
                     <span class="search-title">Top products by units sold</span>
                     <button class="copy-btn" onclick="copySearch(this)">Copy</button>
                 </div>
-                <div class="search-spl">index=buttercup sourcetype=buttercup_sales | stats sum(units_sold) as total_units by product | sort -total_units</div>
+                <div class="search-spl">index=buttercup earliest=0 latest=now sourcetype=buttercup_sales | stats sum(units_sold) as total_units by product | sort -total_units</div>
             </div>
 
             <div class="search-card">
@@ -615,7 +615,7 @@ cd splunk-lab</code>
                     <span class="search-title">Revenue trend over time</span>
                     <button class="copy-btn" onclick="copySearch(this)">Copy</button>
                 </div>
-                <div class="search-spl">index=buttercup sourcetype=buttercup_sales | timechart span=1d sum(revenue) by vendor</div>
+                <div class="search-spl">index=buttercup earliest=0 latest=now sourcetype=buttercup_sales | timechart span=1d sum(revenue) by vendor</div>
             </div>
         </div>
 

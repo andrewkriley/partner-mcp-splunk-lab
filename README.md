@@ -96,18 +96,20 @@ Three datasets are auto-indexed into the `buttercup` index:
 
 **Try these searches in Splunk:**
 
+Sample events are dated **January 2025**. Splunk Web defaults to a short recent window (for example the last 24 hours), which would return no rows for this data. Use **All time** in the time-range picker, or keep the `earliest=0 latest=now` bounds in the searches below so they always match the sample data.
+
 ```spl
 # Traffic by HTTP status code
-index=buttercup sourcetype=buttercup_web | stats count by status
+index=buttercup earliest=0 latest=now sourcetype=buttercup_web | stats count by status
 
 # Sales revenue by vendor
-index=buttercup sourcetype=buttercup_sales | stats sum(revenue) as total_revenue by vendor | sort -total_revenue
+index=buttercup earliest=0 latest=now sourcetype=buttercup_sales | stats sum(revenue) as total_revenue by vendor | sort -total_revenue
 
 # Top products by units sold
-index=buttercup sourcetype=buttercup_sales | stats sum(units_sold) as total_units by product | sort -total_units
+index=buttercup earliest=0 latest=now sourcetype=buttercup_sales | stats sum(units_sold) as total_units by product | sort -total_units
 
 # Revenue trend over time
-index=buttercup sourcetype=buttercup_sales | timechart span=1d sum(revenue) by vendor
+index=buttercup earliest=0 latest=now sourcetype=buttercup_sales | timechart span=1d sum(revenue) by vendor
 ```
 
 ### Lab Guide and Status Dashboard
