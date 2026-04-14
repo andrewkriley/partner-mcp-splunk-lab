@@ -45,12 +45,12 @@
   .tab.active { color:var(--accent); border-bottom-color:var(--accent); }
   .tab .lock { font-size:10px; margin-left:4px; opacity:0.6; }
 
-  .tab-content { display:none; flex:1; overflow:hidden; flex-direction:column; }
+  .tab-content { display:none; flex:1; min-height:0; overflow:hidden; flex-direction:column; }
   .tab-content.active { display:flex; }
 
   /* ── Explore Tools ── */
-  #explore { padding:0; overflow:hidden; }
-  .explore-layout { display:flex; flex:1; overflow:hidden; }
+  #explore { padding:0; overflow:hidden; min-height:0; flex:1; }
+  .explore-layout { display:flex; flex:1; min-height:0; overflow:hidden; }
   .tool-list { width:240px; border-right:1px solid var(--border); overflow-y:auto; padding:12px; flex-shrink:0; background:var(--bg-secondary); }
   .tool-item { padding:10px 12px; border-radius:6px; cursor:pointer; margin-bottom:4px; font-size:13px; transition:background 0.15s, border-color 0.15s; border-left:3px solid transparent; }
   .tool-item:hover { background:rgba(255,255,255,0.04); }
@@ -58,8 +58,9 @@
   .tool-item .tool-desc { font-size:11px; color:var(--text-secondary); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .tool-item.active .tool-desc { color:var(--text-secondary); }
 
-  .tool-panel { flex:1; display:flex; flex-direction:column; overflow:hidden; background:var(--bg-primary); }
-  .tool-form { padding:20px 24px; overflow-y:auto; flex:1; }
+  .tool-panel { flex:1; min-height:0; display:flex; flex-direction:column; overflow:hidden; background:var(--bg-primary); }
+  .tool-form-scroll { flex:1; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+  .tool-form { padding:20px 24px; }
   .tool-form h2 { font-size:16px; margin-bottom:4px; color:#fff; }
   .tool-form .desc { font-size:13px; color:var(--text-secondary); margin-bottom:16px; }
   .field-group { margin-bottom:12px; }
@@ -83,7 +84,7 @@
   .run-btn:disabled { opacity:0.4; cursor:not-allowed; }
   .run-bar .latency-display { font-size:12px; color:var(--green); font-family:var(--mono); }
 
-  .tool-result { overflow-y:auto; padding:20px 24px; flex:1; display:none; border-top:1px solid var(--border); background:var(--bg-primary); }
+  .tool-result { overflow-y:auto; min-height:0; flex:1; padding:20px 24px; display:none; border-top:1px solid var(--border); background:var(--bg-primary); -webkit-overflow-scrolling:touch; }
   .result-header { font-size:12px; color:var(--text-secondary); margin-bottom:8px; display:flex; align-items:center; gap:8px; }
   .result-header .latency { color:var(--green); }
   .result-pre {
@@ -159,10 +160,10 @@
 <div class="tab-content active" id="explore">
   <div class="explore-layout">
     <div class="tool-list" id="tool-list">
-      <div style="color:var(--text-dim);font-size:13px;padding:8px;">Loading tools…</div>
+      <div style="color:var(--text-secondary);font-size:13px;padding:8px;">Loading tools…</div>
     </div>
     <div class="tool-panel">
-      <div id="tool-form-area">
+      <div class="tool-form-scroll" id="tool-form-area">
         <div class="empty-state" id="explore-empty">Select a tool from the list to get started.</div>
       </div>
       <div class="run-bar" id="run-bar" style="display:none">
