@@ -228,30 +228,66 @@ check_status() {
 }
 
 # ── Mint Splunk REST API token (JWT, audience splunkd) ─────────────────────
-# Requires Splunk management port reachable from the host (lab default).
+# Uses Python (not curl -u) so passwords with ':' or other characters work.
+# Prints the JWT on stdout only; diagnostics on stderr. Requires Splunk on
+# https://HOST:8089 reachable from this machine (lab: 127.0.0.1).
 mint_splunk_api_token() {
-  local user="$1" pass="$2"
-  local host="${3:-127.0.0.1}"
-  local body
-  body=$(curl -sk -u "${user}:${pass}" -X POST \
-    "https://${host}:8089/services/authorization/tokens?output_mode=json" \
-    --data-urlencode "name=${user}" \
-    -d "type=static" \
-    -d "audience=splunkd") || return 1
-  printf '%s' "$body" | python3 <<'PY'
-import json, sys
-try:
-    j = json.load(sys.stdin)
-except json.JSONDecodeError:
+  SPLUNK_MINT_USER="${1:-admin}" SPLUNK_MINT_PASS="$2" SPLUNK_MINT_HOST="${3:-127.0.0.1}" python3 <<'PY'
+import base64
+import json
+import os
+import ssl
+import sys
+import urllib.error
+import urllib.parse
+import urllib.request
+
+user = os.environ.get("SPLUNK_MINT_USER", "admin")
+password = os.environ.get("SPLUNK_MINT_PASS", "")
+host = os.environ.get("SPLUNK_MINT_HOST", "127.0.0.1")
+if not password:
+    print("SPLUNK_MINT_PASS is empty — check SPLUNK_PASSWORD in .env", file=sys.stderr)
     sys.exit(1)
+
+url = f"https://{host}:8089/services/authorization/tokens?output_mode=json"
+body = urllib.parse.urlencode(
+    {"name": user, "type": "static", "audience": "splunkd"}
+).encode("utf-8")
+ctx = ssl.create_default_context()
+ctx.check_hostname = False
+ctx.verify_mode = ssl.CERT_NONE
+req = urllib.request.Request(url, data=body, method="POST")
+raw = f"{user}:{password}".encode("utf-8")
+req.add_header("Authorization", "Basic " + base64.b64encode(raw).decode("ascii"))
+try:
+    with urllib.request.urlopen(req, context=ctx, timeout=45) as resp:
+        payload = resp.read().decode("utf-8", errors="replace")
+except urllib.error.HTTPError as e:
+    snippet = e.read().decode("utf-8", errors="replace")[:800]
+    print(f"HTTP {e.code} from Splunk: {snippet}", file=sys.stderr)
+    sys.exit(1)
+except OSError as e:
+    print(f"Cannot reach https://{host}:8089 — {e}", file=sys.stderr)
+    sys.exit(1)
+
+try:
+    j = json.loads(payload)
+except json.JSONDecodeError as e:
+    print(f"Invalid JSON from Splunk: {e}", file=sys.stderr)
+    sys.exit(1)
+
 for m in j.get("messages", []):
     if m.get("type") == "ERROR":
+        print(m.get("text", "Splunk returned an error"), file=sys.stderr)
         sys.exit(1)
-for e in j.get("entry", []):
-    t = (e.get("content") or {}).get("token")
-    if t:
-        print(t)
+
+for entry in j.get("entry", []):
+    token = (entry.get("content") or {}).get("token")
+    if token:
+        print(token)
         sys.exit(0)
+
+print("No token in Splunk response (unexpected shape)", file=sys.stderr)
 sys.exit(1)
 PY
 }
@@ -277,9 +313,20 @@ setup_env_sh() {
     fi
   fi
 
-  # Pull SPLUNK_PASSWORD from .env to populate SPLUNK_PASS in env.sh
+  # Pull SPLUNK_PASSWORD from .env (split on first '=' only — values may contain '=')
   local splunk_pass
-  splunk_pass=$(grep '^SPLUNK_PASSWORD=' .env 2>/dev/null | cut -d= -f2-)
+  splunk_pass=$(REPO_ROOT="$REPO_ROOT" python3 <<'PY'
+import os
+from pathlib import Path
+p = Path(os.environ["REPO_ROOT"]) / ".env"
+if not p.is_file():
+    raise SystemExit(0)
+for line in p.read_text().splitlines():
+    if line.startswith("SPLUNK_PASSWORD=") and not line.lstrip().startswith("#"):
+        print(line.split("=", 1)[1], end="")
+        break
+PY
+)
 
   echo -ne "  Hugging Face API token (hf_..., optional — dashboard backgrounds) [blank to skip]: "
   local hf_token
@@ -288,11 +335,13 @@ setup_env_sh() {
 
   local splunk_api_token=""
   info "Minting Splunk REST API token (POST /services/authorization/tokens)…"
-  if splunk_api_token=$(mint_splunk_api_token admin "$splunk_pass" 2>/dev/null); then
+  # stderr from mint is shown so connection/auth errors are visible (not swallowed)
+  if splunk_api_token=$(mint_splunk_api_token admin "$splunk_pass" "127.0.0.1"); then
     success "Splunk API token minted (audience splunkd, user admin)"
     _log "OK: SPLUNK_API_TOKEN minted"
   else
-    warn "Could not mint Splunk API token — is Splunk up on https://127.0.0.1:8089 ? SPLUNK_API_TOKEN left blank; use SPLUNK_USER/SPLUNK_PASS in .claude/env.sh"
+    warn "Could not mint Splunk API token — SPLUNK_API_TOKEN left blank; use SPLUNK_USER/SPLUNK_PASS in .claude/env.sh"
+    info "  Check: Splunk listening on https://127.0.0.1:8089, SPLUNK_PASSWORD correct, and wait until Splunk is fully up."
     _log "WARN: SPLUNK_API_TOKEN mint failed"
   fi
 
