@@ -74,7 +74,7 @@ cd splunk-lab
 ./install.sh
 ```
 
-`install.sh` walks through `.env` configuration, starts the stack, waits for Splunk to be ready, confirms all services are up, and optionally sets up `$HOME/.claude/env.sh` for the `splunk-dashboard-gen` skill. It also provides **Update** and **Reset** modes from its main menu.
+`install.sh` walks through `.env` configuration, starts the stack, waits for Splunk to be ready, confirms all services are up, and optionally sets up `$HOME/.claude/env.sh` for the `splunk-lab-dashboard-gen` skill. It also provides **Update** and **Reset** modes from its main menu.
 
 ### Option B — manual setup
 
@@ -231,7 +231,7 @@ Then restart: `docker compose up -d`. Open `http://localhost:3131/ask/` and swit
 
 This project ships Claude Code skills that work directly with the lab. Skills are project-scoped — they appear automatically when Claude Code is opened from the `splunk-lab` directory.
 
-### splunk-dashboard-gen
+### splunk-lab-dashboard-gen
 
 Generates a full **Splunk Dashboard Studio** dashboard from any SPL query and deploys it live to the local Splunk instance.
 
@@ -261,7 +261,7 @@ Open `$HOME/.claude/env.sh` and set `SPLUNK_PASS` to match the `SPLUNK_PASSWORD`
 
 **Usage** — say to Claude:
 > *"Generate a dashboard from index=buttercup, stats count by status, title: Web Traffic"*
-> *"/splunk-dashboard-gen Buttercup Sales Overview"*
+> *"/splunk-lab-dashboard-gen Buttercup Sales Overview"*
 
 **Output:** `~/dev/claude-created-dashboards/<slug>/` — background PNG, `dashboard.json`, wrapped XML. Live dashboard opens at `http://localhost:8000/en-US/app/search/<slug>`.
 

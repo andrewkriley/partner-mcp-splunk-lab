@@ -151,9 +151,9 @@ index=buttercup sourcetype=buttercup_web earliest=-2y
 
 This project ships Claude Code skills in `.claude/skills/`. They are project-scoped and available automatically when Claude Code is opened from this directory.
 
-### splunk-dashboard-gen
+### splunk-lab-dashboard-gen
 
-**Invoke:** `/splunk-dashboard-gen` (or describe what you want — Claude will trigger it)
+**Invoke:** `/splunk-lab-dashboard-gen` (or describe what you want — Claude will trigger it)
 
 Generates a Splunk Dashboard Studio dashboard end-to-end:
 1. Runs SPL via the `splunk-lab-guide` MCP to retrieve data

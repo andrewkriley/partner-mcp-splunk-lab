@@ -1,5 +1,5 @@
 ---
-name: splunk-dashboard-gen
+name: splunk-lab-dashboard-gen
 description: Generates a Splunk Dashboard Studio dashboard with an AI-generated background image, then deploys it live to Splunk. Runs SPL against the local lab stack via the splunk-lab-guide MCP, synthesises a thematic image prompt, generates a background image via HuggingFace, builds the Dashboard Studio JSON, deploys it via the Splunk REST API, and returns the live dashboard link. Use when the user says "generate a dashboard", "create a splunk dashboard", or "make a dashboard from a query".
 argument-hint: [optional: dashboard title or theme]
 ---
