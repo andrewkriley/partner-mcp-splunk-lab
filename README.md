@@ -33,8 +33,7 @@ Live health of all lab services — container states, Splunk Web and MCP reachab
 ## Prerequisites
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running
-- [Node.js](https://nodejs.org/) installed on the host machine (required for MCP integration)
-- Claude Code or Claude Desktop (for MCP integration)
+- Claude Code (v2.1+) or Claude Desktop (v0.10.5+) for MCP integration — optional if you only use Ask Splunk in the browser
 - A [Splunk Developer License](https://dev.splunk.com/enterprise/dev_license/) (free) to remove the 500 MB/day indexing limit
 
 ---
@@ -192,62 +191,70 @@ Then restart: `docker compose up -d`. Open `http://localhost:3131/ask/` and swit
 
 ## MCP Integration
 
-The Splunk MCP server runs as a container alongside Splunk and exposes an SSE endpoint at `http://localhost:8050/sse`. It gives Claude direct access to Splunk search, dashboards, and alerts.
+The Splunk MCP server runs as a container alongside Splunk and exposes a **Streamable HTTP** endpoint at `http://localhost:8050/mcp`. It gives Claude direct access to Splunk search, dashboards, and alerts.
 
 > **Security note:** The MCP endpoint requires no authentication and is bound to `127.0.0.1` only — it is not accessible from other machines on the network. This configuration is intentional for local demo use. Do not expose port `8050` to external networks.
 
-> **Why mcp-remote?** Claude Code and Claude Desktop require HTTPS for direct SSE connections. Since the lab MCP server uses plain HTTP on localhost, [`mcp-remote`](https://www.npmjs.com/package/mcp-remote) is used as a local stdio proxy — Claude talks to it over stdio, and it forwards requests to `localhost:8050` over HTTP. No SSL involved. Node.js must be installed on the host for `npx` to work.
-
 ### Claude Code
 
-The **Claude Code CLI** loads project-scoped MCP servers from **`.mcp.json`** in the repository root (committed here). Open Claude Code in the `splunk-lab` directory with the stack running and the Splunk tools should appear after the CLI picks up the file.
-
-The **`.claude/settings.json`** file in this repo uses the same `mcpServers` block for other Claude experiences (for example some Claude Code web or Desktop-related flows). If your environment only reads one of these files, use the snippet below in whichever file your client documents.
-
-If you need to add or refresh the CLI config manually:
-
-```bash
-claude mcp add -s project splunk-lab-guide -- npx -y mcp-remote@0.1.38 http://localhost:8050/sse
-```
-
-That writes the equivalent entry into **`.mcp.json`**. Alternatively, merge this JSON into **`.mcp.json`** (or create the file at the project root):
+**Claude Code CLI v2.1+** supports Streamable HTTP transport natively — no Node.js, `npx`, or proxy process needed. The **`.mcp.json`** config is committed in the repo root and picked up automatically when you open Claude Code in the `splunk-lab` directory with the stack running.
 
 ```json
 {
   "mcpServers": {
     "splunk-lab-guide": {
-      "command": "npx",
-      "args": ["-y", "mcp-remote@0.1.38", "http://localhost:8050/sse"]
+      "type": "http",
+      "url": "http://localhost:8050/mcp"
     }
   }
 }
 ```
 
-Then start a conversation:
+Start a conversation once the stack is up:
 > *"Search Splunk for HTTP 500 errors in the last 24 hours"*
-> *"Show me the top 5 vendors by revenue this week"*
+> *"Show me the top 5 vendors by revenue"*
 > *"Create a dashboard showing web traffic by status code"*
 
 ### Claude Desktop
 
-Open your Claude Desktop config file:
+**Claude Desktop v0.10.5+** supports Streamable HTTP. Open the config file and add the `mcpServers` block below, then restart Claude Desktop.
+
 - **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
 - **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
-
-Add the following `mcpServers` block:
 
 ```json
 {
   "mcpServers": {
     "splunk-lab-guide": {
-      "command": "npx",
-      "args": ["-y", "mcp-remote@0.1.38", "http://localhost:8050/sse"]
+      "type": "http",
+      "url": "http://localhost:8050/mcp"
     }
   }
 }
 ```
 
-Restart Claude Desktop — the Splunk tools will appear in the tool list whenever the lab stack is running.
+The Splunk tools appear in the tool list whenever the lab stack is running.
+
+### Troubleshooting
+
+**Tools don't appear in Claude Code**
+- Confirm the stack is running: `docker compose ps`
+- Check the MCP server is registered: `claude mcp list`
+- The entry should show `splunk-lab-guide` with type `http` pointing to `http://localhost:8050/mcp`
+- If missing, re-open Claude Code from inside the `splunk-lab` directory (`.mcp.json` is project-scoped)
+
+**Tools don't appear in Claude Desktop**
+- Restart Claude Desktop after editing the config file — it only reads the file at startup
+- Confirm Claude Desktop is **v0.10.5 or later** (older versions do not support Streamable HTTP)
+- Verify the `type` field is `"http"` — the old `command`/`args` form using `mcp-remote` is no longer needed
+
+**MCP server shows unhealthy in the Status tab**
+- Check container state: `docker compose ps`
+- View MCP server logs: `docker compose logs splunk-mcp`
+- The MCP server waits for Splunk to be ready — if Splunk is still starting, wait for `Ansible playbook complete` in `docker compose logs -f splunk`
+
+**Connection refused on port 8050**
+- The lab stack is not running. Start it: `docker compose up -d`
 
 ---
 
@@ -271,7 +278,7 @@ All ports are bound to `127.0.0.1` and are only accessible from this machine.
 |---|---|---|
 | `3131` | Lab Guide (includes Ask Splunk at `/ask/`) | `LAB_GUIDE_PORT` |
 | `8000` | Splunk Web UI | — |
-| `8050` | Splunk MCP Server (SSE) | — |
+| `8050` | Splunk MCP Server (Streamable HTTP) | — |
 | `8088` | HTTP Event Collector (HEC) | — |
 | `8089` | Splunk REST API | — |
 
