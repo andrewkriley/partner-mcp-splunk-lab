@@ -6,18 +6,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Splunk Lab — Getting Started</title>
     <style>
+        /* Colours aligned with Splunk marketing brand (splunk.com): Apple Green, deep navy, warm accent */
         :root {
-            --bg-primary:    #1a1b1e;
-            --bg-secondary:  #141518;
-            --bg-tertiary:   #0d0e12;
-            --bg-card:       #212226;
-            --border:        #2c2d31;
-            --text-primary:  #d0d5dd;
-            --text-secondary:#8898a8;
-            --accent:        #65a637;
-            --accent-hover:  #74bb40;
-            --accent-dim:    rgba(101,166,55,0.12);
-            --code-bg:       #0d0e12;
+            --bg-primary:    #0c1724;
+            --bg-secondary:  #0f1c2d;
+            --bg-tertiary:   #080f18;
+            --bg-card:       #141e2e;
+            --border:        #233044;
+            --text-primary:  #e2e8f0;
+            --text-secondary:#94a3b8;
+            --accent:        #60ab31;
+            --accent-hover:  #6fbb3a;
+            --accent-dim:    rgba(96, 171, 49, 0.14);
+            --code-bg:       #080f18;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -36,6 +37,7 @@
         .topbar {
             background: var(--bg-secondary);
             border-bottom: 1px solid var(--border);
+            box-shadow: inset 0 -2px 0 0 var(--accent);
             padding: 0 24px;
             height: 52px;
             display: flex;
@@ -45,7 +47,7 @@
         }
         .splunk-mark {
             width: 28px; height: 28px;
-            background: var(--accent);
+            background: linear-gradient(135deg, var(--accent) 0%, #4d9326 100%);
             border-radius: 4px;
             display: flex; align-items: center; justify-content: center;
             font-weight: 800; font-size: 14px; color: #fff; letter-spacing: -0.5px;
@@ -227,8 +229,8 @@
             display: flex; gap: 10px; align-items: flex-start;
             padding: 13px 16px; border-radius: 6px; margin: 14px 0;
             font-size: 13px; line-height: 1.5;
-            background: rgba(101,166,55,0.08);
-            border: 1px solid rgba(101,166,55,0.25);
+            background: rgba(96, 171, 49, 0.1);
+            border: 1px solid rgba(96, 171, 49, 0.28);
             color: var(--text-primary);
         }
 
