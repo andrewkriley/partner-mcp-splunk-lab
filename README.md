@@ -14,19 +14,45 @@ docker compose up  →  Lab guide + Splunk Web UI + MCP server + Ask Splunk read
 
 ## Lab Guide
 
-The lab guide at `http://localhost:3131` is the single interface for the lab. It includes guided setup steps, SPL exercises, **Ask Splunk** (MCP tool explorer and optional chat at `/ask/`), a live status dashboard, and documentation — all in one place.
+The lab guide at `http://localhost:3131` (also at [andrewkriley.github.io/splunk-lab](https://andrewkriley.github.io/splunk-lab/)) is the single interface for the lab. The left sidebar navigates between the three setup steps, lab tools, and documentation.
 
-### Lab Steps
+### Step 1 — Set Up the Lab
 
-Step-by-step walkthrough: clone the repo, configure credentials, start the stack, and connect to MCP.
+Prerequisites, clone, configure `.env`, and start the stack with `docker compose up -d`. The step walks through each action and confirms readiness before moving on.
 
-![Lab Guide Steps](docs/lab-guide.png)
+![Step 1 – Set Up the Lab](docs/screen-step1-setup.png)
+
+### Step 2 — Explore Buttercup Data
+
+Describes the three Buttercup Games datasets (`buttercup_web`, `buttercup_sales`, `buttercup_products`) and provides ready-to-copy SPL queries for common analyses. Each query includes `earliest=0 latest=now` to match the January 2025 sample timestamps regardless of Splunk's default time picker.
+
+![Step 2 – Explore Buttercup Data](docs/screen-step2-buttercup.png)
+
+### Step 3 — Connect to MCP
+
+Tabbed instructions for connecting **Claude Code** and **Claude Desktop** to the MCP server using Streamable HTTP. Includes copy-ready config snippets and a troubleshooting table.
+
+| Claude Code | Claude Desktop |
+|---|---|
+| ![Step 3 – Claude Code](docs/screen-step3-mcp-code.png) | ![Step 3 – Claude Desktop](docs/screen-step3-mcp-desktop.png) |
+
+### Ask Splunk
+
+Browser-based MCP interface — no Claude subscription required. **Explore Tools** lists every MCP tool with auto-generated forms and quick-query presets. **Chat** (optional, requires `ANTHROPIC_API_KEY`) adds natural-language querying via Claude.
+
+![Ask Splunk – Explore Tools](docs/screen-ask-splunk.png)
 
 ### Status Dashboard
 
 Live health of all lab services — container states, Splunk Web and MCP reachability, and OpenTelemetry stack placeholders. Auto-refreshes every 10 seconds.
 
-![Lab Status Dashboard](docs/status.png)
+![Status Dashboard](docs/screen-status.png)
+
+### Documentation
+
+Architecture reference, configuration table, environment variable descriptions, data flow diagram, and network topology — all in the browser alongside the lab.
+
+![Documentation](docs/screen-docs.png)
 
 ---
 
