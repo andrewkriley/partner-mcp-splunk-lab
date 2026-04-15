@@ -44,7 +44,7 @@ Five services run in Docker Compose:
 
 - **splunk** (`splunk/splunk:10.2.1`) — Splunk Enterprise. All ports bound to `127.0.0.1`. Data persisted in the `splunk-var` named volume. The `buttercup_app/` directory is bind-mounted into `/opt/splunk/etc/apps/buttercup_app` and auto-indexed on first boot.
 
-- **splunk-mcp** (built from `mcp/Dockerfile`) — Official Splunk MCP server (`splunk-mcp-server` npm package). Runs in SSE mode on `127.0.0.1:8050`. Connects to Splunk via internal Docker networking on `splunk:8089`. No MCP endpoint auth — localhost-only by design.
+- **splunk-mcp** (built from `mcp/Dockerfile`) — Official Splunk MCP server (`splunk-mcp-server` npm package). Runs in **Streamable HTTP mode** on `127.0.0.1:8050/mcp`. Connects to Splunk via internal Docker networking on `splunk:8089`. No MCP endpoint auth — localhost-only by design. `mcp/server.ts` is our local overlay of the upstream `server.ts`, adding the `http` transport branch.
 
 - **lab-guide** (`nginx:alpine`) — Lab guide served at `127.0.0.1:${LAB_GUIDE_PORT}` (default `3131`). Mounts `lab-guide/` as the web root and `lab-guide/nginx.conf` as the nginx config. Proxies `/api/status` to `status-api:8081` and `/ask/api/*` to `chat:3000/api/*` so Ask Splunk shares the same origin as the guide (embedded at `/ask/`).
 
@@ -72,16 +72,15 @@ All runtime config lives in `.env` (gitignored). See `.env.example` for the full
 
 The project ships **`.mcp.json`** at the repo root for the **Claude Code CLI** (project-scoped MCP). It also ships **`.claude/settings.json`** with the same `mcpServers` entry for other Claude clients that read that path.
 
-**Why mcp-remote instead of `--transport sse`:**
-`claude mcp add --transport sse` requires an HTTPS endpoint. The lab MCP server serves plain HTTP on `localhost:8050`. Using `mcp-remote` as a stdio proxy avoids this — Claude Code communicates with it over stdio, and it forwards requests to `localhost:8050` over HTTP with no SSL involved.
+The MCP server uses the **Streamable HTTP transport** (MCP spec 2025-03-26). This is a stateful POST endpoint — no persistent SSE connection, no proxy process needed. Claude Code 2.1+ connects to it directly.
 
 **Claude Code CLI** — committed **`.mcp.json`** (also writable via `claude mcp add -s project …`):
 ```json
 {
   "mcpServers": {
     "splunk-lab-guide": {
-      "command": "npx",
-      "args": ["-y", "mcp-remote@0.1.38", "http://localhost:8050/sse"]
+      "type": "http",
+      "url": "http://localhost:8050/mcp"
     }
   }
 }
@@ -95,16 +94,14 @@ The project ships **`.mcp.json`** at the repo root for the **Claude Code CLI** (
 {
   "mcpServers": {
     "splunk-lab-guide": {
-      "command": "npx",
-      "args": ["-y", "mcp-remote@0.1.38", "http://localhost:8050/sse"]
+      "type": "http",
+      "url": "http://localhost:8050/mcp"
     }
   }
 }
 ```
 
 Restart Claude Desktop after editing.
-
-**Prerequisite:** Node.js must be installed on the host (for `npx`).
 
 ## Known gotchas
 
