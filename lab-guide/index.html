@@ -1045,7 +1045,7 @@ cd splunk-lab</code>
                 <div class="prereq-card">
                     <div class="prereq-icon">🔑</div>
                     <div class="prereq-title">env.sh credentials</div>
-                    <div class="prereq-desc">One-time setup — see instructions below. The skill reads Splunk credentials from <code>~/.claude/env.sh</code>.</div>
+                    <div class="prereq-desc">One-time setup — see instructions below. The skill reads Splunk credentials from <code>.claude/env.sh</code> in the repo (gitignored).</div>
                 </div>
                 <div class="prereq-card">
                     <div class="prereq-icon">🐳</div>
@@ -1057,10 +1057,10 @@ cd splunk-lab</code>
             <h2>One-time setup</h2>
             <p style="margin-bottom:12px">The skill calls the Splunk REST API directly and reads credentials from a shell file separate from Docker's <code>.env</code>:</p>
             <div class="search-card">
-                <div class="search-header"><span class="search-title">Create ~/.claude/env.sh</span><button class="copy-btn" onclick="copySearch(this)">Copy</button></div>
-                <div class="search-spl">cp env.sh.example $HOME/.claude/env.sh &amp;&amp; chmod 600 $HOME/.claude/env.sh</div>
+                <div class="search-header"><span class="search-title">Create .claude/env.sh</span><button class="copy-btn" onclick="copySearch(this)">Copy</button></div>
+                <div class="search-spl">cp env.sh.example .claude/env.sh &amp;&amp; chmod 600 .claude/env.sh</div>
             </div>
-            <p style="margin:12px 0">Then open <code>~/.claude/env.sh</code> and set <code>SPLUNK_PASS</code> to match the <code>SPLUNK_PASSWORD</code> value in your <code>.env</code> file. <code>SPLUNK_HOST</code> and <code>SPLUNK_USER</code> default to <code>localhost</code> / <code>admin</code> and are correct for this lab.</p>
+            <p style="margin:12px 0">Then open <code>.claude/env.sh</code> and set <code>SPLUNK_PASS</code> to match the <code>SPLUNK_PASSWORD</code> value in your <code>.env</code> file. <code>SPLUNK_HOST</code> and <code>SPLUNK_USER</code> default to <code>localhost</code> / <code>admin</code> and are correct for this lab.</p>
 
             <h2 style="margin-top:24px">How to use</h2>
             <p style="margin-bottom:12px">Invoke the skill in Claude Code by describing a dashboard or using the slash command. Claude will ask for any missing details.</p>

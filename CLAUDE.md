@@ -172,15 +172,15 @@ Generates a Splunk Dashboard Studio dashboard end-to-end:
 |---|---|
 | `splunk-lab-guide` MCP | Already in `.mcp.json` — no action needed |
 | HuggingFace MCP | Must be connected in Claude Code |
-| `$HOME/.claude/env.sh` | Shell credentials file sourced at runtime (not Docker's `.env`) |
+| `.claude/env.sh` | Project-local shell credentials for the skill (gitignored; not Docker's `.env`) |
 | Lab stack running | `docker compose up -d` |
 
-**`env.sh` setup** (one-time, per machine):
+**`env.sh` setup** (one-time, per clone):
 
 ```bash
-cp env.sh.example $HOME/.claude/env.sh
-chmod 600 $HOME/.claude/env.sh
-# Edit $HOME/.claude/env.sh — set SPLUNK_PASS to match SPLUNK_PASSWORD in .env
+cp env.sh.example .claude/env.sh
+chmod 600 .claude/env.sh
+# Edit .claude/env.sh — set SPLUNK_PASS to match SPLUNK_PASSWORD in .env
 ```
 
 **Output:** `~/dev/claude-created-dashboards/<slug>/` — background image, dashboard JSON, and wrapped XML. The slug is a lowercase-hyphenated version of the dashboard title.

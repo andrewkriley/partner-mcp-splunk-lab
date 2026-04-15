@@ -1,5 +1,7 @@
 # Secrets — never commit
 .env
+.claude/env.sh
+.claude/worktrees/
 
 # macOS
 .DS_Store

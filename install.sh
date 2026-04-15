@@ -2,7 +2,7 @@
 # install.sh — Splunk Lab setup assistant
 #
 # Modes (selected from main menu):
-#   Install  — check deps, create .env, start stack, wait for readiness, setup env.sh
+#   Install  — check deps, create .env, start stack, wait for readiness, optional .claude/env.sh
 #   Update   — stop stack, re-collect .env vars, rebuild and restart
 #   Reset    — docker compose down -v, blank .env
 #
@@ -11,6 +11,7 @@
 # Splunk readiness timeout (seconds) — override via environment variable:
 #   SPLUNK_READY_TIMEOUT=600 ./install.sh
 SPLUNK_READY_TIMEOUT=${SPLUNK_READY_TIMEOUT:-300}
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # ── Colours ──────────────────────────────────────────────────────────────────
 RED='\033[0;31m'
@@ -226,14 +227,14 @@ check_status() {
   echo -e "  MCP endpoint → ${CYAN}http://localhost:8050/mcp${NC}"
 }
 
-# ── env.sh skill setup ───────────────────────────────────────────────────────
+# ── env.sh skill setup (project-local, gitignored) ──────────────────────────
 setup_env_sh() {
-  header "Skill setup — \$HOME/.claude/env.sh"
-  echo "  The splunk-dashboard-gen skill needs credentials in \$HOME/.claude/env.sh."
-  echo "  This is separate from .env (which is only read by Docker Compose)."
+  header "Skill setup — .claude/env.sh"
+  echo "  The splunk-lab-dashboard-gen skill reads credentials from .claude/env.sh"
+  echo "  in this repo (gitignored). Separate from .env (Docker Compose only)."
   echo
 
-  local env_sh="$HOME/.claude/env.sh"
+  local env_sh="$REPO_ROOT/.claude/env.sh"
 
   if [[ -f "$env_sh" ]]; then
     success "env.sh already exists at $env_sh"
@@ -251,7 +252,7 @@ setup_env_sh() {
   local splunk_pass
   splunk_pass=$(grep '^SPLUNK_PASSWORD=' .env 2>/dev/null | cut -d= -f2-)
 
-  mkdir -p "$HOME/.claude"
+  mkdir -p "$REPO_ROOT/.claude"
   cp env.sh.example "$env_sh"
 
   # Substitute SPLUNK_PASS — macOS sed needs '' after -i, Linux doesn't
@@ -278,7 +279,7 @@ do_install() {
   check_status
 
   echo
-  echo -ne "  Set up \$HOME/.claude/env.sh for the splunk-dashboard-gen skill? [Y/n]: "
+  echo -ne "  Create .claude/env.sh for the splunk-lab-dashboard-gen skill? [Y/n]: "
   local do_skill
   read -r do_skill
   _log "MENU: skill setup prompt → ${do_skill}"

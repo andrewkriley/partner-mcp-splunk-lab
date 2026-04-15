@@ -7,7 +7,7 @@ Two tiers:
                 env.sh.example, and the dashboard JSON template.
 
   Integration — marked @pytest.mark.integration; require the Docker stack
-                and valid credentials in $HOME/.claude/env.sh (or .env).
+                and valid credentials in .env (integration uses requests session).
                 HuggingFace image generation is skipped unless HF_TOKEN is set.
 
 Run unit tests only:
@@ -114,9 +114,17 @@ class TestSkillFile:
         content = SKILL_PATH.read_text()
         assert "localhost" in content, "Skill should default Splunk host to localhost for the lab"
 
-    def test_skill_references_env_sh(self):
+    def test_skill_references_project_env_sh(self):
         content = SKILL_PATH.read_text()
-        assert "env.sh" in content, "Skill should source $HOME/.claude/env.sh for credentials"
+        assert ".claude/env.sh" in content, (
+            "Skill should source project-local .claude/env.sh for credentials"
+        )
+        assert "SPLUNK_LAB_ROOT" in content, (
+            "Skill should resolve SPLUNK_LAB_ROOT (git top-level) before sourcing env.sh"
+        )
+        assert "$HOME/.claude/env.sh" not in content, (
+            "Skill should not reference home-directory env.sh — use .claude/env.sh in the repo"
+        )
 
     def test_skill_dashboard_json_template_structure(self):
         """The Dashboard Studio JSON template in the skill must contain the required top-level keys."""
