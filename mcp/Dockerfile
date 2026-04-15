@@ -12,8 +12,10 @@ WORKDIR /app/typescript
 # Install all dependencies (including devDependencies for ts-node)
 RUN npm install
 
-# Overlay the upstream server.ts with our local version (adds Streamable HTTP transport)
+# Overlay upstream files with our local versions
 COPY server.ts /app/typescript/server.ts
+# splunkClient.ts: configurable axios timeout via SPLUNK_TIMEOUT_MS (default 120 s)
+COPY splunkClient.ts /app/typescript/splunkClient.ts
 
 EXPOSE 8050
 

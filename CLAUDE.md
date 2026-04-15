@@ -103,6 +103,50 @@ The MCP server uses the **Streamable HTTP transport** (MCP spec 2025-03-26). Thi
 
 Restart Claude Desktop after editing.
 
+## Searching via MCP
+
+The MCP server is registered as **`splunk-lab-guide`** — always use the MCP tools; do not fall back to `curl` against Splunk's REST API.
+
+### Buttercup time range
+Buttercup events use **January 2025** timestamps. The `search_oneshot` and `search_export` tools default to `earliest_time: -24h`, which returns **zero results**. Always pass an explicit range:
+
+| Goal | `earliest_time` value |
+|---|---|
+| All Buttercup data | `-2y` |
+| January 2025 only | `2025-01-01T00:00:00.000+0000` |
+| Last two years | `-2y` |
+
+### Choosing the right search tool
+- **`search_oneshot`** — synchronous; Splunk holds the HTTP connection open until the search finishes. Use for small, bounded queries with `| head N` or tight time ranges.
+- **`search_export`** — streaming; more resilient for aggregations (`stats`, `timechart`, `chart`) or when expecting >100 rows.
+
+### Writing fast SPL for Buttercup
+- Always scope by sourcetype — don't scan the whole index:
+  - `sourcetype=buttercup_web` — web access logs (clientip, uri, status, bytes)
+  - `sourcetype=buttercup_sales` — order transactions (product_name, categoryId, sale_price, quantity)
+  - `sourcetype=buttercup_products` — product catalogue (productId, product_name, category)
+- Add `| head 50` to cap raw event returns
+- Add `| table field1 field2 ...` to drop unused fields before the result is returned
+- Use `output_format: markdown` for readable output, `csv` for tabular data
+
+### Example patterns
+```spl
+# Raw sales rows — all time
+index=buttercup sourcetype=buttercup_sales earliest=-2y | head 20
+
+# Revenue by product (use search_export for aggregations)
+index=buttercup sourcetype=buttercup_sales earliest=-2y
+| stats sum(sale_price) as revenue by product_name
+| sort -revenue
+
+# Top pages by traffic
+index=buttercup sourcetype=buttercup_web earliest=-2y
+| stats count by uri | sort -count | head 10
+```
+
+### Tuning timeouts and result limits
+`search_oneshot` has a configurable axios timeout (default 120 s). For unusually slow queries, set `SPLUNK_TIMEOUT_MS` in `.env`. To cap result size for faster interactive responses, set `SPL_MAX_EVENTS_COUNT=1000` (default is 100 000).
+
 ## Known gotchas
 
 - **Do not name data files with a `.log` extension.** The Splunk Docker image silently blocks all `.log` files under `/opt/splunk/etc/` from being monitored — they never appear in `splunk list monitor` and are never indexed. Use `.txt`, `.csv`, or any other extension instead.
