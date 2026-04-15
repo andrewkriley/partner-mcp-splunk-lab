@@ -74,7 +74,7 @@ cd splunk-lab
 ./install.sh
 ```
 
-`install.sh` walks through `.env` configuration, starts the stack, waits for Splunk to be ready, confirms all services are up, and optionally sets up `$HOME/.claude/env.sh` for the `splunk-lab-dashboard-gen` skill. It also provides **Update** and **Reset** modes from its main menu.
+`install.sh` walks through `.env` configuration, starts the stack, waits for Splunk to be ready, confirms all services are up, and optionally creates `.claude/env.sh` (gitignored) for the `splunk-lab-dashboard-gen` skill. It also provides **Update** and **Reset** modes from its main menu.
 
 ### Option B — manual setup
 
@@ -248,16 +248,16 @@ Generates a full **Splunk Dashboard Studio** dashboard from any SPL query and de
 | Lab stack running | `docker compose up -d` |
 | `splunk-lab-guide` MCP | Configured in `.mcp.json` — no action needed |
 | HuggingFace MCP | Connect via Claude Code MCP settings |
-| `$HOME/.claude/env.sh` | One-time setup — see below |
+| `.claude/env.sh` | One-time setup — see below (gitignored, never commit) |
 
 **One-time `env.sh` setup:**
 
 ```bash
-cp env.sh.example $HOME/.claude/env.sh
-chmod 600 $HOME/.claude/env.sh
+cp env.sh.example .claude/env.sh
+chmod 600 .claude/env.sh
 ```
 
-Open `$HOME/.claude/env.sh` and set `SPLUNK_PASS` to match the `SPLUNK_PASSWORD` value in your `.env` file. `SPLUNK_HOST` and `SPLUNK_USER` default to `localhost` and `admin` — correct for the local lab.
+Open `.claude/env.sh` and set `SPLUNK_PASS` to match the `SPLUNK_PASSWORD` value in your `.env` file. `SPLUNK_HOST` and `SPLUNK_USER` default to `localhost` and `admin` — correct for the local lab.
 
 **Usage** — say to Claude:
 > *"Generate a dashboard from index=buttercup, stats count by status, title: Web Traffic"*

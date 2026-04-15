@@ -144,6 +144,12 @@ Use the Write tool to save the final JSON to `$HOME/dev/claude-created-dashboard
 
 The Splunk REST API (`/data/ui/views`) stores Dashboard Studio dashboards as XML with the JSON embedded in a `<definition><![CDATA[...]]></definition>` block.
 
+All Bash in this step runs from the **splunk-lab repository root** (Claude Code project directory). Resolve it before sourcing credentials:
+
+```bash
+SPLUNK_LAB_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"; [[ -z "$SPLUNK_LAB_ROOT" ]] && SPLUNK_LAB_ROOT="$PWD"
+```
+
 **Step 6a — Generate the XML wrapper** using the Bash tool:
 
 ```bash
@@ -168,22 +174,24 @@ print(f"Written {len(xml)} chars to {out}")
 PYEOF
 ```
 
-**Step 6b — Resolve Splunk credentials** from `$HOME/.claude/env.sh`:
+**Step 6b — Resolve Splunk credentials** from `.claude/env.sh` in the repo (gitignored; copy from `env.sh.example` or run `./install.sh` and accept the skill prompt):
 
 ```bash
-source "$HOME/.claude/env.sh" 2>/dev/null || true
+SPLUNK_LAB_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"; [[ -z "$SPLUNK_LAB_ROOT" ]] && SPLUNK_LAB_ROOT="$PWD"
+source "$SPLUNK_LAB_ROOT/.claude/env.sh" 2>/dev/null || true
 # Fall back to lab defaults if env.sh is not set up
 SPLUNK_HOST="${SPLUNK_HOST:-localhost}"
 SPLUNK_USER="${SPLUNK_USER:-admin}"
 # SPLUNK_PASS must be set — read from env.sh or prompt user
 ```
 
-If `SPLUNK_PASS` is not set after sourcing, stop and instruct the user to create `$HOME/.claude/env.sh` (see `env.sh.example` at the repo root).
+If `SPLUNK_PASS` is not set after sourcing, stop and instruct the user to create `.claude/env.sh` from `env.sh.example` at the repo root (`cp env.sh.example .claude/env.sh && chmod 600 .claude/env.sh`, then set `SPLUNK_PASS` to match `SPLUNK_PASSWORD` in `.env`).
 
 **Step 6c — Check if the dashboard already exists:**
 
 ```bash
-source "$HOME/.claude/env.sh" 2>/dev/null || true
+SPLUNK_LAB_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"; [[ -z "$SPLUNK_LAB_ROOT" ]] && SPLUNK_LAB_ROOT="$PWD"
+source "$SPLUNK_LAB_ROOT/.claude/env.sh" 2>/dev/null || true
 SPLUNK_HOST="${SPLUNK_HOST:-localhost}"
 SPLUNK_USER="${SPLUNK_USER:-admin}"
 STATUS=$(curl -sk -o /dev/null -w "%{http_code}" \
@@ -195,7 +203,8 @@ echo $STATUS
 **If STATUS is 200 (update existing):**
 
 ```bash
-source "$HOME/.claude/env.sh" 2>/dev/null || true
+SPLUNK_LAB_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"; [[ -z "$SPLUNK_LAB_ROOT" ]] && SPLUNK_LAB_ROOT="$PWD"
+source "$SPLUNK_LAB_ROOT/.claude/env.sh" 2>/dev/null || true
 SPLUNK_HOST="${SPLUNK_HOST:-localhost}"
 SPLUNK_USER="${SPLUNK_USER:-admin}"
 curl -sk -X POST \
@@ -208,7 +217,8 @@ curl -sk -X POST \
 **If STATUS is 404 (create new):**
 
 ```bash
-source "$HOME/.claude/env.sh" 2>/dev/null || true
+SPLUNK_LAB_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"; [[ -z "$SPLUNK_LAB_ROOT" ]] && SPLUNK_LAB_ROOT="$PWD"
+source "$SPLUNK_LAB_ROOT/.claude/env.sh" 2>/dev/null || true
 SPLUNK_HOST="${SPLUNK_HOST:-localhost}"
 SPLUNK_USER="${SPLUNK_USER:-admin}"
 curl -sk -X POST \
