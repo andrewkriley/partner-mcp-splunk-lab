@@ -48,7 +48,7 @@ Five services run in Docker Compose:
 
 - **splunk** (`splunk/splunk:10.2.1`) — Splunk Enterprise. All ports bound to `127.0.0.1`. Data persisted in the `splunk-var` named volume. The `buttercup_app/` directory is bind-mounted into `/opt/splunk/etc/apps/buttercup_app` and auto-indexed on first boot.
 
-- **splunk-mcp** (built from `mcp/Dockerfile`) — Official Splunk MCP server (`splunk-mcp-server` npm package). Runs in **Streamable HTTP mode** on `127.0.0.1:8050/mcp`. Connects to Splunk via internal Docker networking on `splunk:8089`. No MCP endpoint auth — localhost-only by design. `mcp/server.ts` is our local overlay of the upstream `server.ts`, adding the `http` transport branch.
+- **splunk-mcp** (built from `mcp/Dockerfile`) — Builds from Splunk’s upstream repo [**splunk-mcp-server2**](https://github.com/splunk/splunk-mcp-server2) (see `mcp/Dockerfile`), with **local overlays** `mcp/server.ts` and `mcp/splunkClient.ts`. Runs in **Streamable HTTP** mode on `127.0.0.1:8050/mcp`. Connects to Splunk via Docker DNS on `splunk:8089`. No MCP endpoint auth — localhost-only by design. **Customisation index:** [`docs/splunk-mcp-customisations/README.md`](docs/splunk-mcp-customisations/README.md).
 
 - **lab-guide** (`nginx:alpine`) — Lab guide served at `127.0.0.1:${LAB_GUIDE_PORT}` (default `3131`). Mounts `lab-guide/` as the web root and `lab-guide/nginx.conf` as the nginx config. Proxies `/api/status` to `status-api:8081` and `/ask/api/*` to `chat:3000/api/*` so Ask Splunk shares the same origin as the guide (embedded at `/ask/`).
 
@@ -74,38 +74,15 @@ All runtime config lives in `.env` (gitignored). See `.env.example` for the full
 
 ## MCP integration
 
-The project ships **`.mcp.json`** at the repo root for the **Claude Code CLI** (project-scoped MCP). It also ships **`.claude/settings.json`** with the same `mcpServers` entry for other Claude clients that read that path.
+**Transport:** Streamable HTTP (MCP 2025-03-26) at `http://localhost:8050/mcp` — stateful POST, no long-lived SSE proxy.
 
-The MCP server uses the **Streamable HTTP transport** (MCP spec 2025-03-26). This is a stateful POST endpoint — no persistent SSE connection, no proxy process needed. Claude Code 2.1+ connects to it directly.
+**Client config:** The canonical `mcpServers` snippet lives in **`.mcp.json`** (repo root) and is duplicated in **`.claude/settings.json`** for clients that read that path. Claude Code 2.1+ picks up `.mcp.json` when opened from this directory; use `claude mcp add -s project …` if you need to re-register.
 
-**Claude Code CLI** — committed **`.mcp.json`** (also writable via `claude mcp add -s project …`):
-```json
-{
-  "mcpServers": {
-    "splunk-lab-guide": {
-      "type": "http",
-      "url": "http://localhost:8050/mcp"
-    }
-  }
-}
-```
-
-**Claude Desktop** — one-time manual edit to the machine-local config:
+**Claude Desktop** — paste the same `mcpServers` block into the machine-local JSON, then restart:
 - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
 - Windows: `%APPDATA%\Claude\claude_desktop_config.json`
 
-```json
-{
-  "mcpServers": {
-    "splunk-lab-guide": {
-      "type": "http",
-      "url": "http://localhost:8050/mcp"
-    }
-  }
-}
-```
-
-Restart Claude Desktop after editing.
+**Lab vs upstream Splunk MCP:** [`docs/splunk-mcp-customisations/README.md`](docs/splunk-mcp-customisations/README.md). End-user troubleshooting and UI copy: **README** (MCP Integration).
 
 ## Searching via MCP
 

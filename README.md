@@ -273,24 +273,13 @@ Open `.claude/env.sh` and set `SPLUNK_PASS` to match the `SPLUNK_PASSWORD` value
 
 ## MCP Integration
 
-The Splunk MCP server runs as a container alongside Splunk and exposes a **Streamable HTTP** endpoint at `http://localhost:8050/mcp`. It gives Claude direct access to Splunk search, dashboards, and alerts.
+The Splunk MCP server runs alongside Splunk at **`http://localhost:8050/mcp`** using **Streamable HTTP** (MCP 2025-03-26) so Claude can call Splunk search, dashboards, and alerts. The image is built from Splunk’s [**splunk-mcp-server2**](https://github.com/splunk/splunk-mcp-server2) with lab overlays in `mcp/server.ts` and `mcp/splunkClient.ts`. **[Lab vs upstream — full delta](docs/splunk-mcp-customisations/README.md)**.
 
 > **Security note:** The MCP endpoint requires no authentication and is bound to `127.0.0.1` only — it is not accessible from other machines on the network. This configuration is intentional for local demo use. Do not expose port `8050` to external networks.
 
 ### Claude Code
 
-**Claude Code CLI v2.1+** supports Streamable HTTP transport natively — no Node.js, `npx`, or proxy process needed. The **`.mcp.json`** config is committed in the repo root and picked up automatically when you open Claude Code in the `splunk-lab` directory with the stack running.
-
-```json
-{
-  "mcpServers": {
-    "splunk-lab-guide": {
-      "type": "http",
-      "url": "http://localhost:8050/mcp"
-    }
-  }
-}
-```
+**Claude Code CLI v2.1+** supports Streamable HTTP natively (no `npx` or proxy). The repo root **`.mcp.json`** registers `splunk-lab-guide` → `http://localhost:8050/mcp`; it loads automatically when you open this project in Claude Code with the stack running.
 
 Start a conversation once the stack is up:
 > *"Search Splunk for HTTP 500 errors in the last 24 hours"*
@@ -299,23 +288,12 @@ Start a conversation once the stack is up:
 
 ### Claude Desktop
 
-**Claude Desktop v0.10.5+** supports Streamable HTTP. Open the config file and add the `mcpServers` block below, then restart Claude Desktop.
+**Claude Desktop v0.10.5+** supports Streamable HTTP. Add the same `mcpServers` object as in `.mcp.json` to your machine config, then restart the app.
 
 - **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
 - **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
 
-```json
-{
-  "mcpServers": {
-    "splunk-lab-guide": {
-      "type": "http",
-      "url": "http://localhost:8050/mcp"
-    }
-  }
-}
-```
-
-The Splunk tools appear in the tool list whenever the lab stack is running.
+The Splunk tools appear whenever the lab stack is running.
 
 ### Troubleshooting
 
