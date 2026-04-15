@@ -42,7 +42,11 @@ async function initializeSplunkClient() {
   console.log("Splunk client connected");
 }
 
-// Initialize server
+// Create a fully-configured McpServer instance.
+// Called once per HTTP session so each session gets its own server object —
+// reusing a single global McpServer across sessions causes the active transport
+// to be replaced on every new connection, breaking in-flight tool calls.
+function createMcpServer(): McpServer {
 const server = new McpServer(
   {
     name: config.name,
@@ -691,6 +695,9 @@ server.resource(
   }
 );
 
+return server;
+} // end createMcpServer()
+
 // Signal handler
 function signalHandler() {
   console.log("\n\n✨ Server shutdown ...");
@@ -724,7 +731,7 @@ async function main() {
 
   if (config.transport === "stdio") {
     const transport = new StdioServerTransport();
-    await server.connect(transport);
+    await createMcpServer().connect(transport);
     console.log("Server running on stdio");
   } else if (config.transport === "http") {
     const app = express();
@@ -781,7 +788,10 @@ async function main() {
             console.log(`HTTP transport closed for session ${transport!.sessionId}`);
           }
         };
-        await server.connect(transport);
+        // Each session gets its own McpServer so reconnects don't clobber the
+        // active transport on an in-flight tool call.
+        const sessionServer = createMcpServer();
+        await sessionServer.connect(transport);
       }
 
       await transport.handleRequest(req, res, req.body);
@@ -824,7 +834,7 @@ async function main() {
         delete transports[sessionId];
       };
 
-      await server.connect(transport);
+      await createMcpServer().connect(transport);
       console.log(`SSE transport connected for session ${sessionId}`);
     };
 
