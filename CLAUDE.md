@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Versioning
+
+Every PR must include a version bump in `VERSION`. Increment the patch version (e.g. `0.5.7` → `0.5.8`). Check `VERSION` before committing — if it has not been bumped relative to `origin/main`, bump it and include the change in the same commit.
+
 ## Pre-push hook
 
 A pre-push hook blocks pushes until integration tests pass. Install it once after cloning:
