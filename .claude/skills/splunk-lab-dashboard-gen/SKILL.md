@@ -59,6 +59,8 @@ Use the `mcp__huggingface__gr1_z_image_turbo_generate` tool with:
 - `random_seed`: `true`
 - `steps`: `8`
 
+The HuggingFace MCP must be connected in Claude Code with a valid API token. The project’s `.claude/env.sh` (gitignored) should define `export HF_TOKEN=...` — when Bash steps source that file (see Step 6), the token is available to any CLI tooling in the same shell.
+
 The tool will return an image URL. Create the output directory and download the image using the Bash tool:
 
 ```bash
@@ -174,7 +176,7 @@ print(f"Written {len(xml)} chars to {out}")
 PYEOF
 ```
 
-**Step 6b — Resolve Splunk credentials** from `.claude/env.sh` in the repo (gitignored; copy from `env.sh.example` or run `./install.sh` and accept the skill prompt):
+**Step 6b — Resolve Splunk credentials** from `.claude/env.sh` in the repo (gitignored; copy from `env.sh.example` or run `./install.sh` and accept the skill prompt — install mints `SPLUNK_API_TOKEN` when Splunk is reachable):
 
 ```bash
 SPLUNK_LAB_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"; [[ -z "$SPLUNK_LAB_ROOT" ]] && SPLUNK_LAB_ROOT="$PWD"
@@ -182,10 +184,15 @@ source "$SPLUNK_LAB_ROOT/.claude/env.sh" 2>/dev/null || true
 # Fall back to lab defaults if env.sh is not set up
 SPLUNK_HOST="${SPLUNK_HOST:-localhost}"
 SPLUNK_USER="${SPLUNK_USER:-admin}"
-# SPLUNK_PASS must be set — read from env.sh or prompt user
+# Prefer Bearer when install.sh (or the user) set SPLUNK_API_TOKEN; else basic auth
+if [[ -n "${SPLUNK_API_TOKEN:-}" ]]; then
+  _AUTH=( -H "Authorization: Bearer ${SPLUNK_API_TOKEN}" )
+else
+  _AUTH=( -u "${SPLUNK_USER}:${SPLUNK_PASS}" )
+fi
 ```
 
-If `SPLUNK_PASS` is not set after sourcing, stop and instruct the user to create `.claude/env.sh` from `env.sh.example` at the repo root (`cp env.sh.example .claude/env.sh && chmod 600 .claude/env.sh`, then set `SPLUNK_PASS` to match `SPLUNK_PASSWORD` in `.env`).
+If neither `SPLUNK_API_TOKEN` nor `SPLUNK_PASS` is usable after sourcing, stop and instruct the user to create `.claude/env.sh` from `env.sh.example` at the repo root (`cp env.sh.example .claude/env.sh && chmod 600 .claude/env.sh`, then set `SPLUNK_PASS` to match `SPLUNK_PASSWORD` in `.env`, or run `./install.sh` to mint `SPLUNK_API_TOKEN` automatically).
 
 **Step 6c — Check if the dashboard already exists:**
 
@@ -194,8 +201,13 @@ SPLUNK_LAB_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"; [[ -z "$SPLUNK_L
 source "$SPLUNK_LAB_ROOT/.claude/env.sh" 2>/dev/null || true
 SPLUNK_HOST="${SPLUNK_HOST:-localhost}"
 SPLUNK_USER="${SPLUNK_USER:-admin}"
+if [[ -n "${SPLUNK_API_TOKEN:-}" ]]; then
+  _AUTH=( -H "Authorization: Bearer ${SPLUNK_API_TOKEN}" )
+else
+  _AUTH=( -u "${SPLUNK_USER}:${SPLUNK_PASS}" )
+fi
 STATUS=$(curl -sk -o /dev/null -w "%{http_code}" \
-  -u "$SPLUNK_USER:$SPLUNK_PASS" \
+  "${_AUTH[@]}" \
   "https://$SPLUNK_HOST:8089/servicesNS/admin/search/data/ui/views/<splunk_id>")
 echo $STATUS
 ```
@@ -207,9 +219,14 @@ SPLUNK_LAB_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"; [[ -z "$SPLUNK_L
 source "$SPLUNK_LAB_ROOT/.claude/env.sh" 2>/dev/null || true
 SPLUNK_HOST="${SPLUNK_HOST:-localhost}"
 SPLUNK_USER="${SPLUNK_USER:-admin}"
+if [[ -n "${SPLUNK_API_TOKEN:-}" ]]; then
+  _AUTH=( -H "Authorization: Bearer ${SPLUNK_API_TOKEN}" )
+else
+  _AUTH=( -u "${SPLUNK_USER}:${SPLUNK_PASS}" )
+fi
 curl -sk -X POST \
+  "${_AUTH[@]}" \
   "https://$SPLUNK_HOST:8089/servicesNS/admin/search/data/ui/views/<splunk_id>" \
-  -u "$SPLUNK_USER:$SPLUNK_PASS" \
   --data-urlencode "eai:data@$HOME/dev/claude-created-dashboards/<slug>/dashboard_wrapped.xml" \
   -o /dev/null -w "HTTP %{http_code}"
 ```
@@ -221,9 +238,14 @@ SPLUNK_LAB_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"; [[ -z "$SPLUNK_L
 source "$SPLUNK_LAB_ROOT/.claude/env.sh" 2>/dev/null || true
 SPLUNK_HOST="${SPLUNK_HOST:-localhost}"
 SPLUNK_USER="${SPLUNK_USER:-admin}"
+if [[ -n "${SPLUNK_API_TOKEN:-}" ]]; then
+  _AUTH=( -H "Authorization: Bearer ${SPLUNK_API_TOKEN}" )
+else
+  _AUTH=( -u "${SPLUNK_USER}:${SPLUNK_PASS}" )
+fi
 curl -sk -X POST \
+  "${_AUTH[@]}" \
   "https://$SPLUNK_HOST:8089/servicesNS/admin/search/data/ui/views" \
-  -u "$SPLUNK_USER:$SPLUNK_PASS" \
   -d "name=<splunk_id>" \
   --data-urlencode "eai:data@$HOME/dev/claude-created-dashboards/<slug>/dashboard_wrapped.xml" \
   -o /dev/null -w "HTTP %{http_code}"

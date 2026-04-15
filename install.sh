@@ -227,6 +227,35 @@ check_status() {
   echo -e "  MCP endpoint → ${CYAN}http://localhost:8050/mcp${NC}"
 }
 
+# ── Mint Splunk REST API token (JWT, audience splunkd) ─────────────────────
+# Requires Splunk management port reachable from the host (lab default).
+mint_splunk_api_token() {
+  local user="$1" pass="$2"
+  local host="${3:-127.0.0.1}"
+  local body
+  body=$(curl -sk -u "${user}:${pass}" -X POST \
+    "https://${host}:8089/services/authorization/tokens?output_mode=json" \
+    --data-urlencode "name=${user}" \
+    -d "type=static" \
+    -d "audience=splunkd") || return 1
+  printf '%s' "$body" | python3 <<'PY'
+import json, sys
+try:
+    j = json.load(sys.stdin)
+except json.JSONDecodeError:
+    sys.exit(1)
+for m in j.get("messages", []):
+    if m.get("type") == "ERROR":
+        sys.exit(1)
+for e in j.get("entry", []):
+    t = (e.get("content") or {}).get("token")
+    if t:
+        print(t)
+        sys.exit(0)
+sys.exit(1)
+PY
+}
+
 # ── env.sh skill setup (project-local, gitignored) ──────────────────────────
 setup_env_sh() {
   header "Skill setup — .claude/env.sh"
@@ -252,15 +281,62 @@ setup_env_sh() {
   local splunk_pass
   splunk_pass=$(grep '^SPLUNK_PASSWORD=' .env 2>/dev/null | cut -d= -f2-)
 
+  echo -ne "  Hugging Face API token (hf_..., optional — dashboard backgrounds) [blank to skip]: "
+  local hf_token
+  read -r hf_token
+  _log "MENU: HF_TOKEN ${hf_token:+provided}"
+
+  local splunk_api_token=""
+  info "Minting Splunk REST API token (POST /services/authorization/tokens)…"
+  if splunk_api_token=$(mint_splunk_api_token admin "$splunk_pass" 2>/dev/null); then
+    success "Splunk API token minted (audience splunkd, user admin)"
+    _log "OK: SPLUNK_API_TOKEN minted"
+  else
+    warn "Could not mint Splunk API token — is Splunk up on https://127.0.0.1:8089 ? SPLUNK_API_TOKEN left blank; use SPLUNK_USER/SPLUNK_PASS in .claude/env.sh"
+    _log "WARN: SPLUNK_API_TOKEN mint failed"
+  fi
+
   mkdir -p "$REPO_ROOT/.claude"
   cp env.sh.example "$env_sh"
 
-  # Substitute SPLUNK_PASS — macOS sed needs '' after -i, Linux doesn't
-  if [[ "$(uname)" == "Darwin" ]]; then
-    sed -i '' "s|^export SPLUNK_PASS=.*|export SPLUNK_PASS=${splunk_pass}|" "$env_sh"
-  else
-    sed -i "s|^export SPLUNK_PASS=.*|export SPLUNK_PASS=${splunk_pass}|" "$env_sh"
-  fi
+  # Write secrets with Python — avoids breaking on special characters in passwords/tokens
+  SPLUNK_PASS="$splunk_pass" HF_TOKEN="${hf_token:-}" SPLUNK_API_TOKEN="${splunk_api_token:-}" ENV_SH="$env_sh" python3 <<'PY'
+import os
+import re
+from pathlib import Path
+
+def sh_single_quote(s: str) -> str:
+    return "'" + s.replace("'", "'\"'\"'") + "'"
+
+p = Path(os.environ["ENV_SH"])
+splunk = os.environ.get("SPLUNK_PASS", "")
+hf = os.environ.get("HF_TOKEN", "")
+api = os.environ.get("SPLUNK_API_TOKEN", "")
+lines = p.read_text().splitlines()
+out = []
+found_pass = False
+found_hf = False
+found_api = False
+for ln in lines:
+    if re.match(r"^export SPLUNK_PASS=", ln):
+        out.append(f"export SPLUNK_PASS={sh_single_quote(splunk)}")
+        found_pass = True
+    elif re.match(r"^export SPLUNK_API_TOKEN=", ln):
+        out.append(f"export SPLUNK_API_TOKEN={sh_single_quote(api)}")
+        found_api = True
+    elif re.match(r"^export HF_TOKEN=", ln):
+        out.append(f"export HF_TOKEN={sh_single_quote(hf)}")
+        found_hf = True
+    else:
+        out.append(ln)
+if not found_pass:
+    out.append(f"export SPLUNK_PASS={sh_single_quote(splunk)}")
+if not found_api:
+    out.append(f"export SPLUNK_API_TOKEN={sh_single_quote(api)}")
+if not found_hf:
+    out.append(f"export HF_TOKEN={sh_single_quote(hf)}")
+p.write_text("\n".join(out) + "\n")
+PY
 
   chmod 600 "$env_sh"
   success "env.sh written to $env_sh (permissions: 600)"
