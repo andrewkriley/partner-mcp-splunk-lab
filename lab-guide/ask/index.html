@@ -5,33 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ask Splunk — Splunk Lab</title>
 <style>
-  /* Fonts + colours from splunk.com clientlib-site (marketing) */
-  @font-face {
-    font-family: splunk_data_sans;
-    font-style: normal;
-    font-weight: 400;
-    src: url("https://www.splunk.com/etc.clientlibs/splunk/core/clientlibs/clientlib-site/resources/resources/fonts/splunkdatasans/woff2/splunkdatasans_w_rg.woff2") format("woff2"),
-         url("https://www.splunk.com/etc.clientlibs/splunk/core/clientlibs/clientlib-site/resources/resources/fonts/splunkdatasans/woff/splunkdatasans_w_rg.woff") format("woff");
-    font-display: swap;
-  }
-  @font-face {
-    font-family: splunk_data_sans;
-    font-style: normal;
-    font-weight: 700;
-    src: url("https://www.splunk.com/etc.clientlibs/splunk/core/clientlibs/clientlib-site/resources/resources/fonts/splunkdatasans/woff2/splunkdatasans_w_bd.woff2") format("woff2"),
-         url("https://www.splunk.com/etc.clientlibs/splunk/core/clientlibs/clientlib-site/resources/resources/fonts/splunkdatasans/woff/splunkdatasans_w_bd.woff") format("woff");
-    font-display: swap;
-  }
-  @font-face {
-    font-family: splunk_data_sans_mono;
-    font-style: normal;
-    font-weight: 400;
-    src: url("https://www.splunk.com/etc.clientlibs/splunk/core/clientlibs/clientlib-site/resources/resources/fonts/splunkdatasans/woff2/splunkdatasansmono_w_rg.woff2") format("woff2"),
-         url("https://www.splunk.com/etc.clientlibs/splunk/core/clientlibs/clientlib-site/resources/resources/fonts/splunkdatasans/woff/splunkdatasansmono_w_rg.woff") format("woff");
-    font-display: swap;
-  }
-
+  /* Colours from splunk.com marketing CSS; system font stacks (no remote font files) */
   :root {
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     --splunk-navy:     #0c1724;
     --splunk-green:    #65a637;
     --splunk-coral:    #f16221;
@@ -54,8 +31,8 @@
     --green:           var(--splunk-green);
     --red:             #ef4444;
     --yellow:          #f59e0b;
-    --font:            splunk_data_sans, "Helvetica Neue", Helvetica, Arial, sans-serif;
-    --mono:            splunk_data_sans_mono, "SF Mono", "Fira Code", monospace;
+    --font:            var(--font-sans);
+    --mono:            var(--font-mono);
   }
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family:var(--font); background:var(--bg-primary); color:var(--text-primary); height:100vh; display:flex; flex-direction:column; }

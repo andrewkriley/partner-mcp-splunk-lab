@@ -6,33 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Splunk Lab — Getting Started</title>
     <style>
-        /* Typography + hex tokens from splunk.com clientlib-site CSS (marketing site) */
-        @font-face {
-            font-family: splunk_data_sans;
-            font-style: normal;
-            font-weight: 400;
-            src: url("https://www.splunk.com/etc.clientlibs/splunk/core/clientlibs/clientlib-site/resources/resources/fonts/splunkdatasans/woff2/splunkdatasans_w_rg.woff2") format("woff2"),
-                 url("https://www.splunk.com/etc.clientlibs/splunk/core/clientlibs/clientlib-site/resources/resources/fonts/splunkdatasans/woff/splunkdatasans_w_rg.woff") format("woff");
-            font-display: swap;
-        }
-        @font-face {
-            font-family: splunk_data_sans;
-            font-style: normal;
-            font-weight: 700;
-            src: url("https://www.splunk.com/etc.clientlibs/splunk/core/clientlibs/clientlib-site/resources/resources/fonts/splunkdatasans/woff2/splunkdatasans_w_bd.woff2") format("woff2"),
-                 url("https://www.splunk.com/etc.clientlibs/splunk/core/clientlibs/clientlib-site/resources/resources/fonts/splunkdatasans/woff/splunkdatasans_w_bd.woff") format("woff");
-            font-display: swap;
-        }
-        @font-face {
-            font-family: splunk_data_sans_mono;
-            font-style: normal;
-            font-weight: 400;
-            src: url("https://www.splunk.com/etc.clientlibs/splunk/core/clientlibs/clientlib-site/resources/resources/fonts/splunkdatasans/woff2/splunkdatasansmono_w_rg.woff2") format("woff2"),
-                 url("https://www.splunk.com/etc.clientlibs/splunk/core/clientlibs/clientlib-site/resources/resources/fonts/splunkdatasans/woff/splunkdatasansmono_w_rg.woff") format("woff");
-            font-display: swap;
-        }
-
+        /* Colours from splunk.com marketing CSS; fonts use system stacks (no third-party CDN) */
         :root {
+            --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Helvetica, Arial, sans-serif;
+            --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
             --splunk-navy:     #0c1724;
             --splunk-navy-2:   #001d29;
             --splunk-green:    #65a637;
@@ -57,7 +34,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: splunk_data_sans, "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-family: var(--font-sans);
             background: var(--bg-primary);
             color: var(--text-primary);
             height: 100vh;
@@ -231,7 +208,7 @@
         .code-lang { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); }
         code {
             display: block; padding: 13px 16px;
-            font-family: splunk_data_sans_mono, "SF Mono", "Fira Code", Consolas, monospace;
+            font-family: var(--font-mono);
             font-size: 13px; line-height: 1.6; color: #c9d1d9;
             white-space: pre; overflow-x: auto;
         }
@@ -285,7 +262,7 @@
             gap: 8px 20px; font-size: 13px; margin: 12px 0;
         }
         .cred-label { color: var(--text-secondary); }
-        .cred-val   { font-family: splunk_data_sans_mono, "SF Mono", monospace; color: #fff; }
+        .cred-val   { font-family: var(--font-mono); color: #fff; }
 
         /* ── Table ─────────────────────────────────────────────────────────── */
         .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 20px; }
@@ -311,7 +288,7 @@
         .search-title { font-size: 13px; font-weight: 600; color: #fff; }
         .search-spl {
             padding: 13px 16px;
-            font-family: splunk_data_sans_mono, "SF Mono", "Fira Code", monospace;
+            font-family: var(--font-mono);
             font-size: 12.5px; line-height: 1.7; color: var(--splunk-aqua);
             background: var(--code-bg); white-space: pre; overflow-x: auto;
         }
@@ -417,7 +394,7 @@
         }
         .status-card.planned { opacity: 0.45; }
         .status-name {
-            font-family: splunk_data_sans_mono, "SF Mono", "Fira Code", monospace;
+            font-family: var(--font-mono);
             font-size: 12px; font-weight: 600; color: #fff;
             margin-bottom: 8px;
             display: flex; align-items: center; gap: 8px;
@@ -892,7 +869,7 @@ cd splunk-lab</code>
             </div>
 
             <h3>Data flow</h3>
-            <div class="card" style="padding:20px;font-size:13px;font-family:splunk_data_sans_mono,'SF Mono',monospace;line-height:2;color:var(--text-secondary);overflow-x:auto;white-space:pre;">Browser ──▶ Lab guide (/ask/) ──▶ Ask Splunk API (chat) ──▶ MCP (:8050) ──▶ Splunk (:8089)
+            <div class="card" style="padding:20px;font-size:13px;font-family:var(--font-mono);line-height:2;color:var(--text-secondary);overflow-x:auto;white-space:pre;">Browser ──▶ Lab guide (/ask/) ──▶ Ask Splunk API (chat) ──▶ MCP (:8050) ──▶ Splunk (:8089)
               │                                    │
               │                                    └──▶ Anthropic API (Chat tab only, when API key set)
                                          │
