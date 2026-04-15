@@ -12,6 +12,9 @@ WORKDIR /app/typescript
 # Install all dependencies (including devDependencies for ts-node)
 RUN npm install
 
+# Overlay the upstream server.ts with our local version (adds Streamable HTTP transport)
+COPY server.ts /app/typescript/server.ts
+
 EXPOSE 8050
 
 # Start using ts-node (development mode — avoids build step complexity)

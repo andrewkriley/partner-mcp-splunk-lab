@@ -8,7 +8,7 @@ import pytest_asyncio
 from pathlib import Path
 from dotenv import load_dotenv
 from mcp import ClientSession
-from mcp.client.sse import sse_client
+from mcp.client.streamable_http import streamablehttp_client
 
 # Load .env for local dev — silently skipped in CI where .env is created from .env.example
 load_dotenv(Path(__file__).parent.parent / ".env")
@@ -114,7 +114,7 @@ from contextlib import asynccontextmanager
 
 @asynccontextmanager
 async def mcp_connect():
-    """Connect to the MCP server over SSE and yield an initialized ClientSession.
+    """Connect to the MCP server over Streamable HTTP and yield an initialized ClientSession.
 
     Usage in tests::
 
@@ -125,7 +125,7 @@ async def mcp_connect():
     anyio cancel-scope teardown issue where pytest-asyncio finalises the
     fixture in a different task.
     """
-    async with sse_client(url=f"{MCP_URL}/sse") as streams:
-        async with ClientSession(*streams) as session:
+    async with streamablehttp_client(url=f"{MCP_URL}/mcp") as (read, write, _):
+        async with ClientSession(read, write) as session:
             await session.initialize()
             yield session

@@ -42,7 +42,7 @@ services:
         - splunk-mcp:latest
     container_name: splunk-mcp
     environment:
-      TRANSPORT: sse
+      TRANSPORT: http
       HOST: 0.0.0.0
       PORT: 8050
       SPLUNK_HOST: splunk                             # hostname only — SplunkClient prepends https://
@@ -52,7 +52,7 @@ services:
       VERIFY_SSL: "false"                          # self-signed cert on local Splunk instance
       NODE_TLS_REJECT_UNAUTHORIZED: "0"            # Node.js SSL bypass for self-signed Splunk cert
     ports:
-      - "127.0.0.1:8050:8050"   # MCP SSE endpoint — localhost only, no auth required
+      - "127.0.0.1:8050:8050"   # MCP HTTP endpoint — localhost only, no auth required
     restart: unless-stopped                        # restart if the process exits unexpectedly
     deploy:
       resources:
@@ -100,7 +100,7 @@ services:
     container_name: chat
     environment:
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
-      MCP_SSE_URL: http://splunk-mcp:8050/sse
+      MCP_HTTP_URL: http://splunk-mcp:8050/mcp
     expose:
       - "3000"   # internal only — lab-guide nginx proxies /ask/api/* here
     depends_on:

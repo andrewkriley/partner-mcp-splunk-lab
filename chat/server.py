@@ -20,12 +20,12 @@ from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from mcp import ClientSession
-from mcp.client.sse import sse_client
+from mcp.client.streamable_http import streamablehttp_client
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("chat")
 
-MCP_SSE_URL = os.getenv("MCP_SSE_URL", "http://localhost:8050/sse")
+MCP_HTTP_URL = os.getenv("MCP_HTTP_URL", "http://localhost:8050/mcp")
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 MODEL = os.getenv("CHAT_MODEL", "claude-haiku-4-5-20251001")
 SYSTEM_PROMPT = (Path(__file__).parent / "system_prompt.txt").read_text()
@@ -36,8 +36,8 @@ _mcp_tools_raw: list[dict] = []
 
 async def _get_mcp_tools() -> tuple[list[dict], list[dict]]:
     """Connect to MCP server and fetch tool definitions."""
-    async with sse_client(url=MCP_SSE_URL) as streams:
-        async with ClientSession(*streams) as session:
+    async with streamablehttp_client(url=MCP_HTTP_URL) as (read, write, _):
+        async with ClientSession(read, write) as session:
             await session.initialize()
             result = await session.list_tools()
             anthropic_tools = []
@@ -58,8 +58,8 @@ async def _get_mcp_tools() -> tuple[list[dict], list[dict]]:
 
 async def _call_mcp_tool(name: str, arguments: dict) -> str:
     """Connect to MCP server and invoke a single tool."""
-    async with sse_client(url=MCP_SSE_URL) as streams:
-        async with ClientSession(*streams) as session:
+    async with streamablehttp_client(url=MCP_HTTP_URL) as (read, write, _):
+        async with ClientSession(read, write) as session:
             await session.initialize()
             result = await session.call_tool(name, arguments=arguments)
             parts = []

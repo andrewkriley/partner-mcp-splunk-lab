@@ -199,17 +199,16 @@ class TestMCPServer:
         sock.close()
         assert result == 0, "Could not connect to MCP server on port 8050"
 
-    def test_mcp_sse_endpoint_responds(self):
-        """MCP SSE endpoint should return HTTP 200 when connected."""
-        try:
-            resp = requests.get(f"{MCP_URL}/sse", stream=True, timeout=5)
-            assert resp.status_code == 200
-        except requests.exceptions.ReadTimeout:
-            # SSE connections stream indefinitely — a ReadTimeout after headers
-            # means the server accepted the connection, which is a pass.
-            pass
-        finally:
-            try:
-                resp.close()
-            except Exception:
-                pass
+    def test_mcp_http_endpoint_responds(self):
+        """MCP Streamable HTTP endpoint should accept an initialize request."""
+        resp = requests.post(
+            f"{MCP_URL}/mcp",
+            json={"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {
+                "protocolVersion": "2024-11-05",
+                "capabilities": {},
+                "clientInfo": {"name": "test", "version": "1.0"},
+            }},
+            headers={"Accept": "application/json, text/event-stream"},
+            timeout=5,
+        )
+        assert resp.status_code == 200
