@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Versioning
+
+Every PR must include a version bump in `VERSION`. Increment the patch version (e.g. `0.5.7` → `0.5.8`). Check `VERSION` before committing — if it has not been bumped relative to `origin/main`, bump it and include the change in the same commit.
+
 ## Pre-push hook
 
 A pre-push hook blocks pushes until integration tests pass. Install it once after cloning:
@@ -151,9 +155,9 @@ index=buttercup sourcetype=buttercup_web earliest=-2y
 
 This project ships Claude Code skills in `.claude/skills/`. They are project-scoped and available automatically when Claude Code is opened from this directory.
 
-### splunk-dashboard-gen
+### splunk-lab-dashboard-gen
 
-**Invoke:** `/splunk-dashboard-gen` (or describe what you want — Claude will trigger it)
+**Invoke:** `/splunk-lab-dashboard-gen` (or describe what you want — Claude will trigger it)
 
 Generates a Splunk Dashboard Studio dashboard end-to-end:
 1. Runs SPL via the `splunk-lab-guide` MCP to retrieve data

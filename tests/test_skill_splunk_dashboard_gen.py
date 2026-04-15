@@ -1,5 +1,5 @@
 """
-Tests for the splunk-dashboard-gen Claude Code skill.
+Tests for the splunk-lab-dashboard-gen Claude Code skill.
 
 Two tiers:
 
@@ -31,7 +31,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # ── Paths ─────────────────────────────────────────────────────────────────
 REPO_ROOT   = Path(__file__).parent.parent
-SKILL_PATH  = REPO_ROOT / ".claude" / "skills" / "splunk-dashboard-gen" / "SKILL.md"
+SKILL_PATH  = REPO_ROOT / ".claude" / "skills" / "splunk-lab-dashboard-gen" / "SKILL.md"
 ENV_EXAMPLE = REPO_ROOT / "env.sh.example"
 
 # ── Credentials (unit tests only need these for integration tier) ──────────
@@ -65,7 +65,7 @@ class TestSkillFile:
     def test_skill_frontmatter_has_name(self):
         frontmatter = _parse_frontmatter(SKILL_PATH)
         assert "name:" in frontmatter, "Frontmatter missing 'name' field"
-        assert "splunk-dashboard-gen" in frontmatter
+        assert "splunk-lab-dashboard-gen" in frontmatter
 
     def test_skill_frontmatter_has_description(self):
         frontmatter = _parse_frontmatter(SKILL_PATH)
@@ -281,7 +281,7 @@ class TestDashboardGenIntegration:
             capture_output=True, text=True, timeout=15
         )
         assert "huggingface" in result.stdout.lower(), (
-            "HuggingFace MCP not connected — required for splunk-dashboard-gen. "
+            "HuggingFace MCP not connected — required for splunk-lab-dashboard-gen. "
             "Connect it in Claude Code settings."
         )
 
