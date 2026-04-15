@@ -172,7 +172,7 @@ Generates a Splunk Dashboard Studio dashboard end-to-end:
 |---|---|
 | `splunk-lab-guide` MCP | Already in `.mcp.json` — no action needed |
 | HuggingFace MCP | Must be connected in Claude Code |
-| `.claude/env.sh` | Project-local shell credentials for the skill (gitignored; not Docker's `.env`) |
+| `.claude/env.sh` | Project-local shell vars: `SPLUNK_PASS`, `SPLUNK_API_TOKEN` (minted by install), `HF_TOKEN`, etc. (gitignored; not Docker's `.env`) |
 | Lab stack running | `docker compose up -d` |
 
 **`env.sh` setup** (one-time, per clone):
@@ -180,8 +180,10 @@ Generates a Splunk Dashboard Studio dashboard end-to-end:
 ```bash
 cp env.sh.example .claude/env.sh
 chmod 600 .claude/env.sh
-# Edit .claude/env.sh — set SPLUNK_PASS to match SPLUNK_PASSWORD in .env
+# Edit .claude/env.sh — set SPLUNK_PASS to match SPLUNK_PASSWORD in .env, and HF_TOKEN for Hugging Face
 ```
+
+Or run `./install.sh` and accept the prompt to create `.claude/env.sh` with `SPLUNK_PASS`, a **minted `SPLUNK_API_TOKEN`** (POST `/services/authorization/tokens` on `127.0.0.1:8089` when Splunk is reachable), and an optional `HF_TOKEN` interactively.
 
 **Output:** `~/dev/claude-created-dashboards/<slug>/` — background image, dashboard JSON, and wrapped XML. The slug is a lowercase-hyphenated version of the dashboard title.
 

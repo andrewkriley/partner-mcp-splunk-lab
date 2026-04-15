@@ -14,7 +14,7 @@ docker compose up  →  Lab guide + Splunk Web UI + MCP server + Ask Splunk read
 
 ## Lab Guide
 
-The lab guide at `http://localhost:3131` (also at [andrewkriley.github.io/splunk-lab](https://andrewkriley.github.io/splunk-lab/)) is the single interface for the lab. The left sidebar navigates between the three setup steps, lab tools, and documentation.
+The lab guide at `http://localhost:3131` (also at [andrewkriley.github.io/splunk-lab](https://andrewkriley.github.io/splunk-lab/)) is the single interface for the lab. The left sidebar navigates between four setup steps, lab tools, and documentation.
 
 ### Step 1 — Set Up the Lab
 
@@ -35,6 +35,10 @@ Tabbed instructions for connecting **Claude Code** and **Claude Desktop** to the
 | Claude Code | Claude Desktop |
 |---|---|
 | ![Step 3 – Claude Code](docs/screen-step3-mcp-code.png) | ![Step 3 – Claude Desktop](docs/screen-step3-mcp-desktop.png) |
+
+### Step 4 — Your first dashboard (Claude Code)
+
+Walks through the **`/splunk-lab-dashboard-gen`** skill: prerequisites (stack, MCP, Hugging Face, `.claude/env.sh` with `SPLUNK_PASS` and `HF_TOKEN`), copy-ready prompts using the **`buttercup`** index, and where to find the live Splunk link when the run completes.
 
 ### Ask Splunk
 
@@ -248,7 +252,7 @@ Generates a full **Splunk Dashboard Studio** dashboard from any SPL query and de
 | Lab stack running | `docker compose up -d` |
 | `splunk-lab-guide` MCP | Configured in `.mcp.json` — no action needed |
 | HuggingFace MCP | Connect via Claude Code MCP settings |
-| `.claude/env.sh` | One-time setup — see below (gitignored, never commit) |
+| `.claude/env.sh` | `SPLUNK_PASS`, minted `SPLUNK_API_TOKEN`, `HF_TOKEN` — see below (gitignored, never commit) |
 
 **One-time `env.sh` setup:**
 
@@ -257,7 +261,7 @@ cp env.sh.example .claude/env.sh
 chmod 600 .claude/env.sh
 ```
 
-Open `.claude/env.sh` and set `SPLUNK_PASS` to match the `SPLUNK_PASSWORD` value in your `.env` file. `SPLUNK_HOST` and `SPLUNK_USER` default to `localhost` and `admin` — correct for the local lab.
+Open `.claude/env.sh` and set `SPLUNK_PASS` to match the `SPLUNK_PASSWORD` value in your `.env` file, and `HF_TOKEN` to your Hugging Face API token (`hf_...`) for dashboard background images. `SPLUNK_HOST` and `SPLUNK_USER` default to `localhost` and `admin` — correct for the local lab. Running `./install.sh` and accepting the skill prompt creates this file, **mints a Splunk REST `SPLUNK_API_TOKEN`** (audience `splunkd`) via the management API when Splunk is up, and can prompt for `HF_TOKEN`.
 
 **Usage** — say to Claude:
 > *"Generate a dashboard from index=buttercup, stats count by status, title: Web Traffic"*

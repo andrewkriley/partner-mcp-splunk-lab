@@ -103,12 +103,12 @@ class TestSkillFile:
             "Skill still uses -24h as earliest_time — Buttercup data is Jan 2025, use -2y"
         )
 
-    def test_skill_uses_basic_auth(self):
-        """Lab uses basic auth (-u user:pass), not Bearer token header."""
+    def test_skill_supports_splunk_rest_auth(self):
+        """Skill prefers Bearer SPLUNK_API_TOKEN when set, else basic auth."""
         content = SKILL_PATH.read_text()
-        assert '-u "$SPLUNK_USER:$SPLUNK_PASS"' in content, (
-            "Skill should use basic auth for the local lab's Splunk REST API"
-        )
+        assert "SPLUNK_API_TOKEN" in content
+        assert "Authorization: Bearer" in content
+        assert '-u "${SPLUNK_USER}:${SPLUNK_PASS}"' in content
 
     def test_skill_references_localhost(self):
         content = SKILL_PATH.read_text()
@@ -159,6 +159,14 @@ class TestEnvShExample:
     def test_env_sh_example_exports_splunk_pass(self):
         content = ENV_EXAMPLE.read_text()
         assert "SPLUNK_PASS" in content
+
+    def test_env_sh_example_exports_hf_token(self):
+        content = ENV_EXAMPLE.read_text()
+        assert "HF_TOKEN" in content
+
+    def test_env_sh_example_exports_splunk_api_token(self):
+        content = ENV_EXAMPLE.read_text()
+        assert "export SPLUNK_API_TOKEN=" in content
 
     def test_env_sh_example_mentions_token_option(self):
         """Token auth should be documented as an alternative."""

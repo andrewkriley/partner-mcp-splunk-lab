@@ -474,23 +474,27 @@
             <div class="step-num">3</div>
             <div class="step-label">Connect to MCP</div>
         </div>
+        <div class="step-item" data-step="3" onclick="goTo(3)">
+            <div class="step-num">4</div>
+            <div class="step-label">Your first dashboard</div>
+        </div>
 
         <hr class="sidebar-hr">
         <div class="sidebar-label">Lab Tools</div>
-        <div class="step-item" id="ask-splunk-nav" data-step="5" onclick="goTo(5)">
+        <div class="step-item" id="ask-splunk-nav" data-step="6" onclick="goTo(6)">
             <div class="tool-icon">💬</div>
             <div class="step-label">Ask Splunk</div>
         </div>
-        <div class="step-item" data-step="3" onclick="goTo(3)">
+        <div class="step-item" data-step="4" onclick="goTo(4)">
             <div class="tool-icon">◉</div>
             <div class="step-label">Status</div>
         </div>
-        <div class="step-item" data-step="4" onclick="goTo(4)">
+        <div class="step-item" data-step="5" onclick="goTo(5)">
             <div class="tool-icon">📖</div>
             <div class="step-label">Documentation</div>
         </div>
 
-        <div class="step-item" data-step="6" onclick="goTo(6)">
+        <div class="step-item" data-step="7" onclick="goTo(7)">
             <div class="tool-icon">⚡</div>
             <div class="step-label">Skills</div>
         </div>
@@ -795,8 +799,57 @@ cd splunk-lab</code>
             </div>
         </div>
 
-        <!-- ── Status ────────────────────────────────────────────────────── -->
+        <!-- ── Step 4: Your first dashboard (Claude Code) ───────────────── -->
         <div class="step-page" id="step-3">
+            <div class="step-badge">Step 4</div>
+            <h1>Your first dashboard</h1>
+            <p class="intro">With <strong>Claude Code</strong> open in this repo and the stack running, use the project skill <code>splunk-lab-dashboard-gen</code> to build a <strong>Dashboard Studio</strong> view from real Buttercup data, generate an AI background image, and deploy it to Splunk in one flow.</p>
+
+            <div class="notice notice-security" style="margin-bottom:20px">
+                <span>ℹ️</span>
+                <span>This step needs <strong>Claude Code</strong> on your machine. If you only use the browser, use <strong>Lab Tools → Ask Splunk</strong> to run searches instead — dashboard generation is not available there yet.</span>
+            </div>
+
+            <h2>Before you start</h2>
+            <div class="prereq-grid" style="margin-bottom:24px">
+                <div class="prereq-card">
+                    <div class="prereq-icon">🐳</div>
+                    <div class="prereq-title">Stack up</div>
+                    <div class="prereq-desc"><code>docker compose up -d</code> — Splunk and MCP must be healthy (see <strong>Status</strong> in the sidebar).</div>
+                </div>
+                <div class="prereq-card">
+                    <div class="prereq-icon">🔌</div>
+                    <div class="prereq-title">MCP servers</div>
+                    <div class="prereq-desc"><code>splunk-lab-guide</code> is in <code>.mcp.json</code>. Connect the <strong>HuggingFace</strong> MCP in Claude Code for background images.</div>
+                </div>
+                <div class="prereq-card">
+                    <div class="prereq-icon">🔑</div>
+                    <div class="prereq-title"><code>.claude/env.sh</code></div>
+                    <div class="prereq-desc">Gitignored file with <code>SPLUNK_PASS</code> (match <code>.env</code>), a minted <code>SPLUNK_API_TOKEN</code> when install succeeds, and <code>HF_TOKEN</code> for Hugging Face. Run <code>./install.sh</code> and accept the skill prompt, or copy from <code>env.sh.example</code>.</div>
+                </div>
+            </div>
+
+            <h2>Invoke the skill</h2>
+            <p>In Claude Code, use the slash command or describe what you want. Claude will ask for <strong>index</strong>, <strong>SPL</strong>, and <strong>dashboard title</strong> if they are missing. Buttercup data is dated <strong>January 2025</strong> — the skill already uses a wide <code>earliest_time</code> for MCP searches.</p>
+
+            <div class="search-card">
+                <div class="search-header"><span class="search-title">Slash command (sets dashboard title)</span><button class="copy-btn" onclick="copySearch(this)">Copy</button></div>
+                <div class="search-spl">/splunk-lab-dashboard-gen Buttercup Web Traffic</div>
+            </div>
+
+            <div class="search-card" style="margin-top:12px">
+                <div class="search-header"><span class="search-title">Natural language — Buttercup web logs by HTTP status</span><button class="copy-btn" onclick="copySearch(this)">Copy</button></div>
+                <div class="search-spl">Generate a dashboard: index buttercup, SPL is sourcetype=buttercup_web | stats count by status, title Buttercup Web by Status</div>
+            </div>
+
+            <p style="margin-top:16px">When the run finishes, open the live link Claude returns (under <code>app/search/</code>). Artefacts are also written under <code>~/dev/claude-created-dashboards/&lt;slug&gt;/</code> on your machine.</p>
+
+            <h2>Learn more</h2>
+            <p>See <strong>Lab Tools → Skills</strong> for prerequisites, troubleshooting, and how the skill uses MCP plus Splunk&rsquo;s REST API.</p>
+        </div>
+
+        <!-- ── Status ────────────────────────────────────────────────────── -->
+        <div class="step-page" id="step-4">
             <div class="status-page-header">
                 <div>
                     <h1>Status</h1>
@@ -833,7 +886,7 @@ cd splunk-lab</code>
         </div>
 
         <!-- ── Ask Splunk (embedded) ───────────────────────────────────── -->
-        <div class="step-page" id="step-5">
+        <div class="step-page" id="step-6">
             <div class="status-page-header">
                 <div>
                     <h1>Ask Splunk</h1>
@@ -846,7 +899,7 @@ cd splunk-lab</code>
         </div>
 
         <!-- ── Documentation ─────────────────────────────────────────────── -->
-        <div class="step-page" id="step-4">
+        <div class="step-page" id="step-5">
             <h1>Documentation</h1>
             <p class="intro">Architecture, configuration reference, and guides for the Splunk Lab.</p>
 
@@ -1024,7 +1077,7 @@ cd splunk-lab</code>
         </div>
 
         <!-- ── Skills ────────────────────────────────────────────────────── -->
-        <div class="step-page" id="step-6">
+        <div class="step-page" id="step-7">
             <h1>Skills</h1>
             <p class="intro">Claude Code skills extend what Claude can do from this project directory. The skills below are project-scoped — they activate automatically when Claude Code is opened inside <code>splunk-lab</code> with the stack running.</p>
 
@@ -1045,7 +1098,7 @@ cd splunk-lab</code>
                 <div class="prereq-card">
                     <div class="prereq-icon">🔑</div>
                     <div class="prereq-title">env.sh credentials</div>
-                    <div class="prereq-desc">One-time setup — see instructions below. The skill reads Splunk credentials from <code>.claude/env.sh</code> in the repo (gitignored).</div>
+                    <div class="prereq-desc">One-time setup — see instructions below. The skill sources <code>.claude/env.sh</code> (gitignored): prefers <code>SPLUNK_API_TOKEN</code> (Bearer) when set, else <code>SPLUNK_USER</code>/<code>SPLUNK_PASS</code>, plus <code>HF_TOKEN</code> for Hugging Face.</div>
                 </div>
                 <div class="prereq-card">
                     <div class="prereq-icon">🐳</div>
@@ -1060,7 +1113,7 @@ cd splunk-lab</code>
                 <div class="search-header"><span class="search-title">Create .claude/env.sh</span><button class="copy-btn" onclick="copySearch(this)">Copy</button></div>
                 <div class="search-spl">cp env.sh.example .claude/env.sh &amp;&amp; chmod 600 .claude/env.sh</div>
             </div>
-            <p style="margin:12px 0">Then open <code>.claude/env.sh</code> and set <code>SPLUNK_PASS</code> to match the <code>SPLUNK_PASSWORD</code> value in your <code>.env</code> file. <code>SPLUNK_HOST</code> and <code>SPLUNK_USER</code> default to <code>localhost</code> / <code>admin</code> and are correct for this lab.</p>
+            <p style="margin:12px 0">Then open <code>.claude/env.sh</code> and set <code>SPLUNK_PASS</code> to match <code>SPLUNK_PASSWORD</code> in <code>.env</code>, and <code>HF_TOKEN</code> to your Hugging Face token (<code>hf_...</code>). <code>SPLUNK_HOST</code> and <code>SPLUNK_USER</code> default to <code>localhost</code> / <code>admin</code>. Or run <code>./install.sh</code> and accept the skill prompt: install **mints <code>SPLUNK_API_TOKEN</code>** against Splunk&rsquo;s REST API when the stack is up, then writes all values into <code>.claude/env.sh</code>.</p>
 
             <h2 style="margin-top:24px">How to use</h2>
             <p style="margin-bottom:12px">Invoke the skill in Claude Code by describing a dashboard or using the slash command. Claude will ask for any missing details.</p>
@@ -1093,14 +1146,14 @@ cd splunk-lab</code>
 <!-- Bottom nav (hidden on tool pages) -->
 <div class="bottom-nav" id="bottom-nav">
     <button class="nav-btn" id="btn-prev" onclick="navigate(-1)" disabled>← Previous</button>
-    <span class="nav-progress" id="nav-progress">Step 1 of 3</span>
+    <span class="nav-progress" id="nav-progress">Step 1 of 4</span>
     <button class="nav-btn primary" id="btn-next" onclick="navigate(1)">Next →</button>
 </div>
 
 <script>
-    // Pages 0-2 are tutorial steps with prev/next nav.
-    // Pages 3-4 are tools — no bottom nav, status page polls the API.
-    const STEPS = [0, 1, 2];
+    // Pages 0-3 are tutorial steps with prev/next nav.
+    // Pages 4+ are tools — no bottom nav; status page polls the API.
+    const STEPS = [0, 1, 2, 3];
     let cur = 0;
     let statusInterval = null;
     let statusCountdown = 10;
@@ -1109,7 +1162,7 @@ cd splunk-lab</code>
     // (e.g. GitHub Pages) — the API backend is not available there.
     const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
     if (!isLocal) {
-        document.querySelector('.step-item[data-step="3"]')?.remove();
+        document.querySelector('.step-item[data-step="4"]')?.remove();
         document.getElementById('ask-splunk-nav')?.remove();
     }
 
@@ -1132,7 +1185,7 @@ cd splunk-lab</code>
         }
 
         document.querySelector('.content').scrollTop = 0;
-        if (n === 3 && isLocal) startStatusPolling();
+        if (n === 4 && isLocal) startStatusPolling();
         else                    stopStatusPolling();
     }
 
