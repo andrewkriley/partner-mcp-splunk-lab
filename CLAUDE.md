@@ -46,11 +46,11 @@ docker compose ps
 
 Five services run in Docker Compose:
 
-- **splunk** (`splunk/splunk:10.2.1`) — Splunk Enterprise. All ports bound to `127.0.0.1`. Data persisted in the `splunk-var` named volume. The `buttercup_app/` directory is bind-mounted into `/opt/splunk/etc/apps/buttercup_app` and auto-indexed on first boot.
+- **splunk** (`splunk/splunk:10.2.1`) — Splunk Enterprise. All host ports bound to `${BIND_HOST:-127.0.0.1}` (localhost by default; set `BIND_HOST=0.0.0.0` in `.env` to expose to the network). Data persisted in the `splunk-var` named volume. The `buttercup_app/` directory is bind-mounted into `/opt/splunk/etc/apps/buttercup_app` and auto-indexed on first boot.
 
-- **splunk-mcp** (built from `mcp/Dockerfile`) — Builds from Splunk’s upstream repo [**splunk-mcp-server2**](https://github.com/splunk/splunk-mcp-server2) (see `mcp/Dockerfile`), with **local overlays** `mcp/server.ts` and `mcp/splunkClient.ts`. Runs in **Streamable HTTP** mode on `127.0.0.1:8050/mcp`. Connects to Splunk via Docker DNS on `splunk:8089`. No MCP endpoint auth — localhost-only by design. **Customisation index:** [`docs/splunk-mcp-customisations/README.md`](docs/splunk-mcp-customisations/README.md).
+- **splunk-mcp** (built from `mcp/Dockerfile`) — Builds from Splunk’s upstream repo [**splunk-mcp-server2**](https://github.com/splunk/splunk-mcp-server2) (see `mcp/Dockerfile`), with **local overlays** `mcp/server.ts` and `mcp/splunkClient.ts`. Runs in **Streamable HTTP** mode on `${BIND_HOST:-127.0.0.1}:8050/mcp` (localhost by default; `BIND_HOST=0.0.0.0` exposes it to the network). Connects to Splunk via Docker DNS on `splunk:8089`. No MCP endpoint auth — keep it on a trusted network when exposed. **Customisation index:** [`docs/splunk-mcp-customisations/README.md`](docs/splunk-mcp-customisations/README.md).
 
-- **lab-guide** (`nginx:alpine`) — Lab guide served at `127.0.0.1:${LAB_GUIDE_PORT}` (default `3131`). Mounts `lab-guide/` as the web root and `lab-guide/nginx.conf` as the nginx config. Proxies `/api/status` to `status-api:8081` and `/ask/api/*` to `chat:3000/api/*` so Ask Splunk shares the same origin as the guide (embedded at `/ask/`).
+- **lab-guide** (`nginx:alpine`) — Lab guide served at `${BIND_HOST:-127.0.0.1}:${LAB_GUIDE_PORT}` (default `127.0.0.1:3131`). Mounts `lab-guide/` as the web root and `lab-guide/nginx.conf` as the nginx config. Proxies `/api/status` to `status-api:8081` and `/ask/api/*` to `chat:3000/api/*` so Ask Splunk shares the same origin as the guide (embedded at `/ask/`).
 
 - **status-api** (built from `status-api/Dockerfile`) — Python sidecar that exposes `GET /api/status` on port 8081 (internal only). Uses the Docker SDK via a read-only `docker.sock` mount to check container states and probes Splunk Web and MCP HTTP endpoints for service health.
 
@@ -189,8 +189,8 @@ gh workflow run deploy-pages.yml --ref main
 ## Security posture
 
 This lab is intentionally insecure for local demo use:
-- All ports are `127.0.0.1`-only
+- All host ports default to `127.0.0.1`-only (controlled by `BIND_HOST` in `.env`)
 - MCP endpoint has no authentication
 - `VERIFY_SSL=false` on the MCP→Splunk connection
 
-Do not change port bindings to `0.0.0.0` without adding authentication.
+Setting `BIND_HOST=0.0.0.0` exposes every lab port (Splunk Web/HEC/REST, MCP, lab guide) to the network **with no added authentication**. Only do this on a trusted network, and never expose these ports to the public internet.
