@@ -275,7 +275,7 @@ Open `.claude/env.sh` and set `SPLUNK_PASS` to match the `SPLUNK_PASSWORD` value
 
 The Splunk MCP server runs alongside Splunk at **`http://localhost:8050/mcp`** using **Streamable HTTP** (MCP 2025-03-26) so Claude can call Splunk search, dashboards, and alerts. The image is built from Splunk’s [**splunk-mcp-server2**](https://github.com/splunk/splunk-mcp-server2) with lab overlays in `mcp/server.ts` and `mcp/splunkClient.ts`. **[Lab vs upstream — full delta](docs/splunk-mcp-customisations/README.md)**.
 
-> **Security note:** The MCP endpoint requires no authentication and is bound to `127.0.0.1` only — it is not accessible from other machines on the network. This configuration is intentional for local demo use. Do not expose port `8050` to external networks.
+> **Security note:** The MCP endpoint requires no authentication. By default it is bound to `127.0.0.1` only — not accessible from other machines. Setting `BIND_HOST=0.0.0.0` in `.env` exposes port `8050` to your network **with no auth**; only do this on a trusted network, and never expose it to the public internet.
 
 ### Claude Code
 
@@ -332,15 +332,15 @@ docker compose down -v
 
 ## Ports
 
-All ports are bound to `127.0.0.1` and are only accessible from this machine.
+By default all ports are bound to `127.0.0.1` and are only accessible from this machine. Set `BIND_HOST=0.0.0.0` in `.env` to bind them to all interfaces so other hosts on your network can reach the lab. This adds **no authentication** to the MCP, HEC, or REST endpoints — only do it on a trusted network.
 
 | Port | Service | Configurable via |
 |---|---|---|
-| `3131` | Lab Guide (includes Ask Splunk at `/ask/`) | `LAB_GUIDE_PORT` |
-| `8000` | Splunk Web UI | — |
-| `8050` | Splunk MCP Server (Streamable HTTP) | — |
-| `8088` | HTTP Event Collector (HEC) | — |
-| `8089` | Splunk REST API | — |
+| `3131` | Lab Guide (includes Ask Splunk at `/ask/`) | `LAB_GUIDE_PORT`, `BIND_HOST` |
+| `8000` | Splunk Web UI | `BIND_HOST` |
+| `8050` | Splunk MCP Server (Streamable HTTP) | `BIND_HOST` |
+| `8088` | HTTP Event Collector (HEC) | `BIND_HOST` |
+| `8089` | Splunk REST API | `BIND_HOST` |
 
 ---
 

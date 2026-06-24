@@ -14,10 +14,12 @@ services:
       SPLUNK_PASSWORD: ${SPLUNK_PASSWORD}          # set in .env — required
       SPLUNK_HEC_TOKEN: ${SPLUNK_HEC_TOKEN}        # pre-set HEC token for easy testing
     ports:
-      # All ports bound to 127.0.0.1 — accessible from this machine only
-      - "127.0.0.1:8000:8000"   # Splunk Web UI
-      - "127.0.0.1:8088:8088"   # HTTP Event Collector (HEC)
-      - "127.0.0.1:8089:8089"   # Splunk REST / management API
+      # Bind host defaults to 127.0.0.1 (this machine only). Set BIND_HOST=0.0.0.0
+      # in .env to allow access from other hosts on your network. Note: HEC (8088)
+      # and the REST API (8089) gain no extra auth when exposed — trusted nets only.
+      - "${BIND_HOST:-127.0.0.1}:8000:8000"   # Splunk Web UI
+      - "${BIND_HOST:-127.0.0.1}:8088:8088"   # HTTP Event Collector (HEC)
+      - "${BIND_HOST:-127.0.0.1}:8089:8089"   # Splunk REST / management API
     volumes:
       - splunk-var:/opt/splunk/var                                          # persist indexes across restarts
       - ./buttercup_app:/opt/splunk/etc/apps/buttercup_app                  # Buttercup sample data app
@@ -52,7 +54,7 @@ services:
       VERIFY_SSL: "false"                          # self-signed cert on local Splunk instance
       NODE_TLS_REJECT_UNAUTHORIZED: "0"            # Node.js SSL bypass for self-signed Splunk cert
     ports:
-      - "127.0.0.1:8050:8050"   # MCP HTTP endpoint — localhost only, no auth required
+      - "${BIND_HOST:-127.0.0.1}:8050:8050"   # MCP HTTP endpoint — localhost by default; BIND_HOST=0.0.0.0 exposes it with NO auth
     restart: unless-stopped                        # restart if the process exits unexpectedly
     deploy:
       resources:
@@ -67,7 +69,7 @@ services:
     image: nginx:alpine
     container_name: lab-guide
     ports:
-      - "127.0.0.1:${LAB_GUIDE_PORT:-3131}:80"   # Lab guide + Ask Splunk UI — localhost only
+      - "${BIND_HOST:-127.0.0.1}:${LAB_GUIDE_PORT:-3131}:80"   # Lab guide + Ask Splunk UI — localhost by default; BIND_HOST=0.0.0.0 opens to the network
     volumes:
       - ./lab-guide:/usr/share/nginx/html:ro
       - ./lab-guide/nginx.conf:/etc/nginx/conf.d/default.conf:ro
